@@ -1,3 +1,11 @@
+/*
+ *  Author: Ricardo Magana-Villalba
+ *          magania@fnal.gov
+ *
+ *  September 2010
+ */
+
+
 #include <iostream>
 
 #include <TFile.h>

@@ -1,3 +1,11 @@
+/*
+ *  Author: Ricardo Magana-Villalba
+ *          magania@fnal.gov
+ *
+ *  September 2010
+ */
+
+
 #include "TH2.h"
 #include "TF2.h"
 #include "TCanvas.h"

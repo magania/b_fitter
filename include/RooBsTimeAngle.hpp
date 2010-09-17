@@ -1,3 +1,11 @@
+/*
+ *  Author: Ricardo Magana-Villalba
+ *          magania@fnal.gov
+ *
+ *  September 2010
+ */
+
+
 #ifndef ROO_BS_TIME_ANGLE
 #define ROO_BS_TIME_ANGLE
 
