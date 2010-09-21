@@ -118,14 +118,28 @@ Double_t RooBsTimeAngle::coefficient(Int_t basisIndex) const {
 
 Double_t RooBsTimeAngle::HarmonicSphericalY(int l, int m, Double_t ctheta, Double_t phi) const {
         if (m==0)
-                return TMath::Sqrt( ((2.0*l+1)*TMath::Gamma(l-m+1))/(4.0*TMath::Pi()*TMath::Gamma(l+m+1)) )*ROOT::Math::assoc_legendre(l,m,ctheta);
+                return TMath::Sqrt( ((2.0*l+1)*TMath::Gamma(l+1))/(4.0*TMath::Pi()*TMath::Gamma(l+1)) )*ROOT::Math::assoc_legendre(l,0,ctheta);
         if (m>0)
-                return TMath::Sqrt( ((2.0*l+1)*TMath::Gamma(l-m+1))/(2.0*TMath::Pi()*TMath::Gamma(l+m+1)) )*ROOT::Math::assoc_legendre(l,m,ctheta)*TMath::Cos(m*phi);
+                return TMath::Sqrt( ((2.0*l+1)*TMath::Gamma(l-m+1))/(2.0*TMath::Pi()*TMath::Gamma(l+m+1)) )*ROOT::Math::assoc_legendre(l,m,ctheta)*TMath::Cos(m*phi)*TMath::Power(-1.0,m);
         if (m<0)
-                return TMath::Sqrt( ((2.0*l+1)*TMath::Gamma(l-m+1))/(2.0*TMath::Pi()*TMath::Gamma(l+m+1)) )*ROOT::Math::assoc_legendre(l,-m,ctheta)*TMath::Sin(m*phi);
+                return TMath::Sqrt( ((2.0*l+1)*TMath::Gamma(l+m+1))/(2.0*TMath::Pi()*TMath::Gamma(l-m+1)) )*ROOT::Math::assoc_legendre(l,-m,ctheta)*TMath::Sin(m*phi);
 }
 
 Double_t RooBsTimeAngle::acceptance() const {
+/*
+	if (__debug){
+		cout << "00 0 = " << e_00p0*HarmonicSphericalY(0,0 ,_ctheta,_phi) << endl;
+		cout << "01-1 = " << e_01n1*HarmonicSphericalY(1,-1,_ctheta,_phi) << endl; 
+		cout << "01 0 = " << e_01p0*HarmonicSphericalY(1,0 ,_ctheta,_phi) << endl;
+		cout << "01 1 = " << e_01p1*HarmonicSphericalY(1,1 ,_ctheta,_phi) << endl;
+		cout << "02-2 = " << e_02n2*HarmonicSphericalY(2,-2,_ctheta,_phi) << endl;
+		cout << "02-1 = " << e_02n1*HarmonicSphericalY(2,-1,_ctheta,_phi) << endl;
+		cout << "02 0 = " << e_02p0*HarmonicSphericalY(2,0 ,_ctheta,_phi) << endl;
+		cout << "02 1 = " << e_02p1*HarmonicSphericalY(2,1 ,_ctheta,_phi) << endl;
+		cout << "02 2 = " << e_02p2*HarmonicSphericalY(2,2 ,_ctheta,_phi) << endl;
+	}
+*/
+
         Double_t result=0;
 
 	result += e_00p0*HarmonicSphericalY(0,0 ,_ctheta,_phi);
@@ -139,6 +153,12 @@ Double_t RooBsTimeAngle::acceptance() const {
 	result += e_02p0*HarmonicSphericalY(2,0 ,_ctheta,_phi);
 	result += e_02p1*HarmonicSphericalY(2,1 ,_ctheta,_phi);
 	result += e_02p2*HarmonicSphericalY(2,2 ,_ctheta,_phi);
+
+/*
+	if(__debug) {
+		cout << "Acceptance = " << result << endl;
+	}
+*/
 
         return result;
 }
