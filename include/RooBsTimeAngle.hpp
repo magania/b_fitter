@@ -122,6 +122,9 @@ protected:
 	static const Double_t e_02p1 = -0.0313594;
 	static const Double_t e_02p2 = -0.322357;
 
+private:
+	static const bool __debug = true;
+
 //    ClassDef(RooBsTimeAngle, 1) // B0s Time and Angular decay PDF
 };
 

@@ -108,8 +108,12 @@ TObject* RooBsTimeAngle::clone(const char* newname) const {
 
 //_____________________________________________________________________________
 Double_t RooBsTimeAngle::coefficient(Int_t basisIndex) const {
-//	cout << basisIndex << " " << _cpsi << " "  << _ctheta << " " << _phi << " " << (1-_D/2.0)*rho_B(basisIndex) << std::endl;
-	return  ( (1-_D/2.0)*rho_B(basisIndex) + (1+_D/2.0)*rho_Bbar(basisIndex) ) * acceptance();
+	if (__debug) {
+		cout << "acceptance = " << acceptance() << endl;
+		cout << "rho_B(" << basisIndex << ") = " << rho_B(basisIndex) << endl;
+	}
+	return rho_B(basisIndex);
+//	return  ( (1-_D/2.0)*rho_B(basisIndex) + (1+_D/2.0)*rho_Bbar(basisIndex) ) * acceptance();
 }
 
 Double_t RooBsTimeAngle::HarmonicSphericalY(int l, int m, Double_t ctheta, Double_t phi) const {
@@ -141,6 +145,10 @@ Double_t RooBsTimeAngle::acceptance() const {
 
 //_____________________________________________________________________________
 Double_t RooBsTimeAngle::rho_B (Int_t bi) const {    //8.19
+	if (__debug) {
+		cout << "P_B(" << bi << ") = " << P_B(bi) << endl; 
+		cout << "Q_B(" << bi << ") = " << Q_B(bi) << endl; 
+	}
 	return	(1-_Fs)*P_B(bi) 
 		+ _Fs*Q_B(bi) 
 		+ 0.206748335783172033*(I_mu()*CrossDot(&RooBsTimeAngle::Aminus,&RooBsTimeAngle::B)).Re()*f_minus_sq(bi)
@@ -157,26 +165,38 @@ Double_t RooBsTimeAngle::rho_Bbar (Int_t bi) const {    //8.20
 
 //_____________________________________________________________________________
 Double_t RooBsTimeAngle::P_B (Int_t bi) const {    //5.5
-	return 0.716197243913529014*CrossDot(&RooBsTimeAngle::Aplus,&RooBsTimeAngle::Aplus).Re()*f_plus_sq(bi)
-		+ 0.716197243913529014*CrossDot(&RooBsTimeAngle::Aminus,&RooBsTimeAngle::Aminus).Re()*f_minus_sq(bi)
-		+ 1.43239448782705803*(CrossDot(&RooBsTimeAngle::Aplus,&RooBsTimeAngle::Aminus)*f_f_star(bi) ).Re(); 
+/*
+	if(__debug) {
+		cout << "Aplus X Aplus = " << CrossDot(&RooBsTimeAngle::Aplus,&RooBsTimeAngle::Aplus) << endl;
+		cout << "f_plus_sq(" << bi << ") = " << f_plus_sq(bi) << endl;
+		cout << "Aminus X Aminus = " << CrossDot(&RooBsTimeAngle::Aminus,&RooBsTimeAngle::Aminus) << endl; 
+		cout << "f_plus_sq(" << bi << ") = " << f_minus_sq(bi) << endl;
+		cout << "Aplus X Aminus = " << CrossDot(&RooBsTimeAngle::Aplus,&RooBsTimeAngle::Aminus) << endl;
+		cout << "f_f_star_sq(" << bi << ") = " << f_f_star(bi) << endl;
+	}
+*/
+
+	return 0.179049310978382253*CrossDot(&RooBsTimeAngle::Aplus,&RooBsTimeAngle::Aplus).Re()*f_plus_sq(bi)
+		+ 0.179049310978382253*CrossDot(&RooBsTimeAngle::Aminus,&RooBsTimeAngle::Aminus).Re()*f_minus_sq(bi)
+		+ 0.358098621956764507*(CrossDot(&RooBsTimeAngle::Aplus,&RooBsTimeAngle::Aminus)*f_f_star(bi) ).Re();
+
 }
 
 //_____________________________________________________________________________
 Double_t RooBsTimeAngle::P_Bbar (Int_t bi) const {    //5.6
-	return 0.716197243913529014*CrossDot(&RooBsTimeAngle::Aplus,&RooBsTimeAngle::Aplus).Re()*f_bar_plus_sq(bi)
-		+ 0.716197243913529014*CrossDot(&RooBsTimeAngle::Aminus,&RooBsTimeAngle::Aminus).Re()*f_bar_minus_sq(bi)
-		+ 1.43239448782705803*(CrossDot(&RooBsTimeAngle::Aplus,&RooBsTimeAngle::Aminus)*f_f_star_bar(bi) ).Re(); 
+	return 0.179049310978382253*CrossDot(&RooBsTimeAngle::Aplus,&RooBsTimeAngle::Aplus).Re()*f_bar_plus_sq(bi)
+		+ 0.179049310978382253*CrossDot(&RooBsTimeAngle::Aminus,&RooBsTimeAngle::Aminus).Re()*f_bar_minus_sq(bi)
+		+ 0.358098621956764507*(CrossDot(&RooBsTimeAngle::Aplus,&RooBsTimeAngle::Aminus)*f_f_star_bar(bi) ).Re();
 }
 
 //_____________________________________________________________________________
 Double_t RooBsTimeAngle::Q_B (Int_t bi) const {    //8.15
-	return 0.238732414637843005*CrossDot(&RooBsTimeAngle::B,&RooBsTimeAngle::B).Re()*f_minus_sq(bi);
+	return 0.0596831036594607511*CrossDot(&RooBsTimeAngle::B,&RooBsTimeAngle::B).Re()*f_minus_sq(bi);
 }
 
 //_____________________________________________________________________________
 Double_t RooBsTimeAngle::Q_Bbar (Int_t bi) const {    //8.16
-	return 0.238732414637843005*CrossDot(&RooBsTimeAngle::B,&RooBsTimeAngle::B).Re()*f_bar_minus_sq(bi);
+	return 0.0596831036594607511*CrossDot(&RooBsTimeAngle::B,&RooBsTimeAngle::B).Re()*f_bar_minus_sq(bi);
 }
 
 
@@ -185,11 +205,28 @@ TComplex RooBsTimeAngle::Aplus(int i) const {    // 5.2
 	Double_t DG = 1/_tau_L - 1/_tau_H;
 	Double_t G = (1/_tau_L + 1/_tau_H)/2 ;
 	Double_t z = TMath::Cos(2.0*_beta)*DG/(2.0*G);
-	Double_t y = (1.0+z)/(1.0-z);
+	Double_t y = (1.0-z)/(1.0+z);
 
 	Double_t xx = y/(y+(1.0-y)*_Ap2);
 	Double_t a0 = TMath::Sqrt(_A02*xx);
 	Double_t al = TMath::Sqrt(_All2*xx);
+
+/*
+	if (__debug) {
+		cout << "DG = " << DG << endl;
+		cout << "G = " << G << endl;
+		cout << "z = " << z << endl;
+		cout << "y = " << y << endl;
+		cout << "xx = " << xx << endl;
+		cout << "a0 = " << a0 << endl;
+		cout << "al = " << al << endl;
+
+		cout << "Aplus = " 
+			<< TComplex(a0*_cpsi,0.0) << " , " 
+			<< -0.707106781186547462*TMath::Sqrt(1-_cpsi*_cpsi)*al*(TMath::Cos(_delta_l) + TComplex::I()*TMath::Sin(_delta_l)) << " , "
+			<< 0.0 << endl;
+	}
+*/
 
 	if (i==1) return TComplex(a0*_cpsi,0.0);
 	if (i==2) return -0.707106781186547462*TMath::Sqrt(1-_cpsi*_cpsi)*al*(TMath::Cos(_delta_l) + TComplex::I()*TMath::Sin(_delta_l));
@@ -203,14 +240,20 @@ TComplex RooBsTimeAngle::Aminus(int i) const {    // 5.3
         Double_t DG = 1/_tau_L - 1/_tau_H;
         Double_t G = (1/_tau_L + 1/_tau_H)/2 ;
         Double_t z = TMath::Cos(2.0*_beta)*DG/(2.0*G);
-        Double_t y = (1.0+z)/(1.0-z);
+        Double_t y = (1.0-z)/(1.0+z);
 
         Double_t xx = y/(y+(1.0-y)*_Ap2);
         Double_t ap = TMath::Sqrt(_Ap2*xx);
 
+/*
+	if(__debug){
+		cout << "Aminus = 0 , 0 , " << 0.707106781186547462*TMath::Sqrt(1-_cpsi*_cpsi)*ap*(TComplex::I()*TMath::Cos(_delta_p) -TMath::Sin(_delta_p)) << endl;
+	}
+*/
+
 	if (i==1) return 0.0;
 	if (i==2) return 0.0; 
-	if (i==3) return 0.707106781186547462*TMath::Sqrt(1-_cpsi*_cpsi)*ap*(TComplex::I()*TMath::Cos(_delta_l) -TMath::Sin(_delta_l));
+	if (i==3) return 0.707106781186547462*TMath::Sqrt(1-_cpsi*_cpsi)*ap*(TComplex::I()*TMath::Cos(_delta_p) -TMath::Sin(_delta_p));
 	std::cout << "ERROR: Aminus("<< i <<")" << std::endl;
 	exit(1);
 }
@@ -226,6 +269,12 @@ TComplex RooBsTimeAngle::B(int i) const {    // 8.16
 
 //_____________________________________________________________________________
 Double_t RooBsTimeAngle::nhat(int i) const {    // 3.6
+/*	if(__debug) {
+		cout << "n = " 
+			<< TMath::Sqrt(1-_ctheta*_ctheta)*TMath::Cos(_phi) << ' ' 
+			<< TMath::Sqrt(1-_ctheta*_ctheta)*TMath::Sin(_phi) << ' ' 
+			<< _ctheta << endl;
+	}*/
 	if (i==1) return TMath::Sqrt(1-_ctheta*_ctheta)*TMath::Cos(_phi);
 	if (i==2) return TMath::Sqrt(1-_ctheta*_ctheta)*TMath::Sin(_phi);
 	if (i==3) return _ctheta; 
@@ -235,9 +284,12 @@ Double_t RooBsTimeAngle::nhat(int i) const {    // 3.6
 
 //_____________________________________________________________________________
 TComplex RooBsTimeAngle::CrossDot(TComplex (RooBsTimeAngle::*A)(int)const ,TComplex (RooBsTimeAngle::*B)(int)const ) const{
-	return    ((this->*A)(2)*nhat(1) - (this->*A)(1)*nhat(2)) * ((this->*B)(2)*nhat(1) - (this->*B)(1)*nhat(2)) 
-		+ ((this->*B)(3)*nhat(1) - (this->*A)(1)*nhat(3)) * ((this->*B)(3)*nhat(1) - (this->*B)(1)*nhat(3)) 
-		+ ((this->*B)(3)*nhat(2) - (this->*A)(2)*nhat(3)) * ((this->*B)(3)*nhat(2) - (this->*B)(2)*nhat(3)) ;
+	return	-(this->*A)(2)*nhat(1)*TComplex::Conjugate(-(this->*B)(2)*nhat(1) + (this->*B)(1)*nhat(2)) + 
+		 (this->*A)(1)*nhat(2)*TComplex::Conjugate(-(this->*B)(2)*nhat(1) + (this->*B)(1)*nhat(2)) + 
+		 (this->*A)(3)*nhat(1)*TComplex::Conjugate( (this->*B)(3)*nhat(1) - (this->*B)(1)*nhat(3)) - 
+		 (this->*A)(1)*nhat(3)*TComplex::Conjugate( (this->*B)(3)*nhat(1) - (this->*B)(1)*nhat(3)) - 
+		 (this->*A)(3)*nhat(2)*TComplex::Conjugate(-(this->*B)(3)*nhat(2) + (this->*B)(2)*nhat(3)) + 
+		 (this->*A)(2)*nhat(3)*TComplex::Conjugate(-(this->*B)(3)*nhat(2) + (this->*B)(2)*nhat(3)) ;
 }
 
 //_____________________________________________________________________________
@@ -246,6 +298,18 @@ Double_t RooBsTimeAngle::f_sq(Double_t A, Double_t B, int bi) const {    //5.7  
 	Double_t L = 1+A*CB;
 	Double_t H = 1-A*CB;
 	Double_t C = 2.0*(_tau_L*L+_tau_H*H);
+/*
+	if(__debug) {
+		cout << "CB = " << CB << endl;
+		cout << "L = " << L << endl;
+		cout << "H = " << H << endl;
+		cout << "C = " << C << endl;
+
+		cout << "f_sq = (" << A << "," << B << ") "  << L/C << " , " << H/C << " , " << A*B*2.0*TMath::Sin(2.0*_beta)/C << " , 0  = " << L/C + H/C + A*B*2.0*TMath::Sin(2.0*_beta)/C << endl;
+
+	}
+*/
+
 	if (bi == _basisExpGammaL) return L/C; 
 	if (bi == _basisExpGammaH) return H/C; 
 	if (bi == _basisExpSinDm ) return A*B*2.0*TMath::Sin(2.0*_beta)/C; 
@@ -271,6 +335,11 @@ Double_t RooBsTimeAngle::f_minus_sq(int bi) const {    //5.8
 //_____________________________________________________________________________
 TComplex RooBsTimeAngle::f_f_star(Double_t A, int bi) const {    //5.9 5.10
 	Double_t C = TMath::Sqrt(((_tau_L-_tau_H)*TMath::Sin(2.0*_beta))*((_tau_L-_tau_H)*TMath::Sin(2.0*_beta))+4.0*_tau_L*_tau_H);
+/*
+	if(__debug){
+		cout << "C = " << C << endl;
+	}
+*/
 
 	if (bi == _basisExpGammaL) return TComplex(0.0, TMath::Sin(2.0*_beta)/2.0/C);
 	if (bi == _basisExpGammaH) return TComplex(0.0, -TMath::Sin(2.0*_beta)/2.0/C); 
@@ -293,6 +362,11 @@ TComplex RooBsTimeAngle::f_f_star(int bi) const {    //5.10
 TComplex RooBsTimeAngle::I_mu() const {    //8.10
 	TComplex imu( TMath::Cos(_delta_s)*0.0032835 - TMath::Sin(_delta_s)*0.326332, 
 	             -TMath::Cos(_delta_s)*0.326332 - TMath::Sin(_delta_s)*0.0032835 );
+	
+	if(__debug) {
+		cout << "I_mu = " << imu << endl;
+	}
+
 	return TMath::Sqrt(_Fs*(1-_Fs))*imu; 
 }
 
@@ -321,13 +395,14 @@ Double_t RooBsTimeAngle::coefAnalyticalIntegral(Int_t basisIndex, Int_t code, co
 	        Double_t DG = 1/_tau_L - 1/_tau_H;
 	        Double_t G = (1/_tau_L + 1/_tau_H)/2 ;
 	        Double_t z = TMath::Cos(2.0*_beta)*DG/(2.0*G);
-	        Double_t y = (1.0+z)/(1.0-z);
+	        Double_t y = (1.0-z)/(1.0+z);
 	
 	        Double_t xx = y/(y+(1.0-y)*_Ap2);
 	        Double_t a0 = TMath::Sqrt(_A02*xx);
 	        Double_t al = TMath::Sqrt(_All2*xx);
 	        Double_t ap = TMath::Sqrt(_Ap2*xx);
 
+		return 0.5;
 
 		/* 4.4 */
 		Double_t N = 2.82094791773878140e-01*e_00p0*(a0*a0+al*al+ap*ap)
@@ -361,28 +436,41 @@ void RooBsTimeAngle::initGenerator(Int_t code)
 
 //_____________________________________________________________________________
 void RooBsTimeAngle::generateEvent(Int_t code) {
-    Double_t max = 0.4;
+    Double_t max = 0.1;
     Double_t value = 0;
 
     while (1) {
-        //_t = -_tau_H * log(RooRandom::uniform(&_aleatorio));
-        _t = RooRandom::uniform(&_aleatorio)*10;
+//        _t = -_tau_H * log(RooRandom::uniform(&_aleatorio));
+        _t = RooRandom::uniform(&_aleatorio)*15;
         switch (code) {
             case 1:
                 _cpsi   = RooRandom::uniform(&_aleatorio) * (_cpsi.max() - _cpsi.min()) + _cpsi.min();
                 _ctheta = RooRandom::uniform(&_aleatorio) * (_ctheta.max() - _ctheta.min()) + _ctheta.min();
                 _phi    = RooRandom::uniform(&_aleatorio) * (_phi.max() - _phi.min()) + _phi.min();
+		if (__debug) {
+			_t = 1.28222;
+			_cpsi = 0.918636;
+			_ctheta = -0.4005;
+			_phi = 0.485588;
+		}
+
+		if (__debug) cout << "t cpsi ctheta phi = " << _t << ' ' << _cpsi << ' ' << _ctheta << ' ' << _phi << endl;
 
                 value = ( coefficient(_basisExpGammaL) * TMath::Exp(-_t/_tau_L)
                         + coefficient(_basisExpGammaH) * TMath::Exp(-_t/_tau_H)
                         + coefficient(_basisExpCosDm)  * TMath::Exp( -_t*(_tau_L+_tau_H)/(2.0*_tau_L*_tau_H) )*TMath::Cos(_Dm * _t)
                         + coefficient(_basisExpSinDm)  * TMath::Exp( -_t*(_tau_L+_tau_H)/(2.0*_tau_L*_tau_H) )*TMath::Sin(_Dm * _t));// * exp(-0.5 * (_tau_L-_tau_H) * _t);
-                break;
+
+		if (__debug) cout << "value = " << value << endl;
+                
+		break;
 	    default:
 		std::cout << "ERROR: generateEvent("<< code << ")" << std::endl;
 		exit(1);
 
         }
+	
+	if(__debug) exit(0);
 
         if (value > max) {
         	cout << "ERROR: Value > max " << value << endl;
@@ -391,11 +479,8 @@ void RooBsTimeAngle::generateEvent(Int_t code) {
 
 
         Double_t rand = RooRandom::uniform(&_aleatorio) * max;
-//        cout << _cpsi << ' ' << _ctheta << ' ' << _phi << endl;
-//        cout << rand << ' ' << value << endl;
+        //cout << rand << ' ' << value << endl;
         if (rand < value)
             break;
     }
-
-
 }

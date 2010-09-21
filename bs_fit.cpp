@@ -43,8 +43,8 @@ int main() {
 	RooWorkspace ws;
 //	ws.import(*data);
 
-	ws.factory("{t[-3,10],et[0,1],cpsi[-1,1],ctheta[-1,1],phi[-3.15,3.15],D[-1,-1,1}");
-	ws.factory("{A02[0.524],All2[0.231],Ap2[0.245],tau_L[1.5],tau_H[1.6],Dm[17.77],beta[0.25,0,1],delta_p[2.95],delta_l[0.2],delta_s[0.2],Fs[0]}");
+	ws.factory("{t[-3,15],et[0,1],cpsi[-1,1],ctheta[-1,1],phi[-3.15,3.15],D[-1,-1,1}");
+	ws.factory("{A02[0.524],All2[0.231],Ap2[0.245],tau_L[1.4],tau_H[1.6],Dm[17.77],beta[0.25,0,1],delta_p[2.95],delta_l[0.2],delta_s[0.2],Fs[0.1]}");
 
         ws.factory("GaussModel::resol(t,meanRes[0.],sigmaRes[0.0001,0,1])");
 //        ws.factory("GaussModel::resol(t,meanRes[0.],scaleRes[1.0,0.8,1.2],et)");
@@ -70,7 +70,8 @@ int main() {
 		rtrue);
 //		*((RooResolutionModel*)ws.allResolutionModels().find("resol")));
 
-	RooDataSet *data = time_angle.generate(RooArgSet(*ws.var("t"), *ws.var("cpsi"), *ws.var("ctheta"), *ws.var("phi")),10000);
+	RooDataSet *data = time_angle.generate(RooArgSet(*ws.var("t"), *ws.var("cpsi"), *ws.var("ctheta"), *ws.var("phi")),1000);
+
 
 /*
         TFile fit_file("bs_fit.root");
