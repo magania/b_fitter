@@ -112,8 +112,7 @@ Double_t RooBsTimeAngle::coefficient(Int_t basisIndex) const {
 		cout << "acceptance = " << acceptance() << endl;
 		cout << "rho_B(" << basisIndex << ") = " << rho_B(basisIndex) << endl;
 	}
-	return rho_B(basisIndex);
-//	return  ( (1-_D/2.0)*rho_B(basisIndex) + (1+_D/2.0)*rho_Bbar(basisIndex) ) * acceptance();
+	return  ( (1-_D/2.0)*rho_B(basisIndex) + (1+_D/2.0)*rho_Bbar(basisIndex) ) * acceptance();
 }
 
 Double_t RooBsTimeAngle::HarmonicSphericalY(int l, int m, Double_t ctheta, Double_t phi) const {
@@ -409,7 +408,7 @@ Int_t RooBsTimeAngle::getCoefAnalyticalIntegral(Int_t /*code*/, RooArgSet& allVa
 
 
 //_____________________________________________________________________________
-Double_t RooBsTimeAngle::coefAnalyticalIntegral(Int_t basisIndex, Int_t code, const char* range) const
+Double_t RooBsTimeAngle::coefAnalyticalIntegral(Int_t bi, Int_t code, const char* range) const
 {
 	if ( code == 1 ){
 	        Double_t DG = 1/_tau_L - 1/_tau_H;
@@ -422,18 +421,62 @@ Double_t RooBsTimeAngle::coefAnalyticalIntegral(Int_t basisIndex, Int_t code, co
 	        Double_t al = TMath::Sqrt(_All2*xx);
 	        Double_t ap = TMath::Sqrt(_Ap2*xx);
 
-		return 0.5;
+	
+		Double_t IAplusXn2 = ((a0*a0+al*al)/3.54490770181103176) * e_00p0
+					+ ((a0*a0+al*al)/15.8533091904240440) * e_02p0
+					- ((a0*a0-al*al)*0.109254843059207907) * e_02p2 ;
+		Double_t IAminusXn2 = (ap*ap/3.54490770181103176) * e_00p0
+					+ (-ap*ap/7.92665459521202198) * e_02p0 ;
+		TComplex IAplusXAminus = al*TComplex(TMath::Cos(_delta_l),TMath::Sin(_delta_l)) * ap*TComplex(TMath::Sin(_delta_p),TMath::Cos(_delta_p)) * 0.218509686118415813 * e_02n1 ;
 
-		/* 4.4 */
-		Double_t N = 2.82094791773878140e-01*e_00p0*(a0*a0+al*al+ap*ap)
-				+ 6.30783130505040007e-02*e_02p0*(a0*a0+al*al-2.0*ap*ap)
-				- 1.09254843059207921e-01*(TMath::Sin(2.0*_beta)*(_tau_L-_tau_H)/TMath::Sqrt((_tau_L-_tau_H)*(_tau_L-_tau_H)*TMath::Sin(2.0*_beta)*TMath::Sin(2.0*_beta)+4.0*_tau_L*_tau_H))*2.0*al*ap*TMath::Cos(_delta_l-_delta_p)*e_02n1
-				+ 1.09254843059207921e-01*(-a0*a0+al*al)*e_02p2;
+		Double_t IBXn2 = e_00p0/3.54490770181103176
+					+ e_02p0/15.8533091904240440
+					- 0.109254843059207907 * e_02p2 ;
+		TComplex IAminusXB = ap*TComplex(-TMath::Sin(_delta_p),TMath::Cos(_delta_p))* 1.01663295048409386 * e_02p1 ;
+		TComplex IAplusXB  = al*TComplex(TMath::Cos(_delta_l),TMath::Sin(_delta_l)) * 1.01663295048409386 * e_02n2 ;
 
 
-//		std::cout << "INTEGRAL N = " << N << std::endl;
+		Double_t IP_B = IAplusXn2*f_plus_sq(bi)
+		                + IAminusXn2*f_minus_sq(bi)
+		                + (IAplusXAminus*f_f_star(bi)).Re();
 
-		return N;
+		Double_t IP_Bbar = IAplusXn2*f_bar_plus_sq(bi)
+		                + IAminusXn2*f_bar_minus_sq(bi)
+		                + (IAplusXAminus*f_f_star_bar(bi)).Re();
+
+		Double_t IQ_B = IBXn2*f_minus_sq(bi);
+		Double_t IQ_Bbar = IBXn2*f_bar_minus_sq(bi);
+
+
+       		Double_t I_rho_B = (1-_Fs)*IP_B
+			                + _Fs*IQ_B
+			                + 0.206748335783172033*(I_mu()*IAminusXB).Re()*f_minus_sq(bi)
+			                + 0.206748335783172033*(I_mu()*IAplusXB*f_f_star(bi)).Re();
+      
+		Double_t I_rho_Bbar = (1-_Fs)*IP_Bbar
+			                + _Fs*IQ_Bbar
+			                + 0.206748335783172033*(I_mu()*IAminusXB).Re()*f_bar_minus_sq(bi)
+			                + 0.206748335783172033*(I_mu()*IAplusXB*f_f_star_bar(bi)).Re();
+	
+		if (__debug){
+			cout << "a0 = "  << a0 << endl;
+			cout << "al = "  << al*TComplex(TMath::Cos(_delta_l),TMath::Sin(_delta_l))  << " |al| = " << al << " delta_l = " << _delta_l << endl;
+			cout << "ap = "  << ap*TComplex(TMath::Cos(_delta_p),TMath::Sin(_delta_p))  << " |ap| = " << ap << " delta_p = " << _delta_p << endl;
+
+			cout << "IAplusXn2 = " << IAplusXn2 << endl;
+			cout << "IAminusXn2 = " << IAminusXn2 << endl;
+			cout << "IAplusXAminus = " << IAplusXAminus << endl;
+			cout << "IBXn2 = " << IBXn2 << endl;
+			cout << "IAplusXB = " << IAplusXB << endl;
+			cout << "IAminusXB = " << IAminusXB << endl;
+			
+			cout << "INTEGRAL N(" << bi << ") = " << I_rho_B << endl;
+		}
+
+		return (1-_D/2.0)*I_rho_B + (1+_D/2.0)*I_rho_Bbar ;
+
+		//Double_t I_rho_B = (1.0-_Fs)*( (a0*a0+al*al)*f_plus_sq(basisIndex) + ap*ap*f_minus_sq(basisIndex) )
+		//			+ _Fs*f_minus_sq(basisIndex);
 	}
 	return 0;
 }

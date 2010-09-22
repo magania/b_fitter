@@ -34,6 +34,8 @@
 #include "RooHistPdf.h"
 #include "RooTruthModel.h"
 
+#include "RooMCStudy.h"
+
 
 int main() {
 //	TFile fit_file("bs_fit.root");
@@ -43,7 +45,7 @@ int main() {
 	RooWorkspace ws;
 //	ws.import(*data);
 
-	ws.factory("{t[-3,15],et[0,1],cpsi[-1,1],ctheta[-1,1],phi[-3.15,3.15],D[-1,-1,1}");
+	ws.factory("{t[-3,15],et[0,1],cpsi[-1,1],ctheta[-1,1],phi[-3.15,3.15],D[-1]");
 	ws.factory("{A02[0.524],All2[0.231],Ap2[0.245],tau_L[1.4],tau_H[1.6],Dm[17.77],beta[0.25,0,1],delta_p[2.95],delta_l[0.2],delta_s[0.2],Fs[0.1]}");
 
         ws.factory("GaussModel::resol(t,meanRes[0.],sigmaRes[0.0001,0,1])");
@@ -69,6 +71,10 @@ int main() {
 		*ws.var("D"),
 		rtrue);
 //		*((RooResolutionModel*)ws.allResolutionModels().find("resol")));
+
+	RooMCStudy toy(time_angle,time_angle,RooArgSet(*ws.var("t"), *ws.var("cpsi"), *ws.var("ctheta"), *ws.var("phi")));
+
+	toy.generateAndFit(100,1000);
 
 	RooDataSet *data = time_angle.generate(RooArgSet(*ws.var("t"), *ws.var("cpsi"), *ws.var("ctheta"), *ws.var("phi")),1000);
 
@@ -113,6 +119,17 @@ int main() {
         }
 
 */
+	TCanvas canvas("canvas", "canvas", 1000,500);
+	canvas.Divide(2);
+	canvas.cd(1);
+	gPad->SetMargin(1,1,1,1);
+	toy.plotParam(*ws.var("beta"))->Draw();
+	canvas.cd(2);
+	gPad->SetMargin(1,1,1,1);
+	toy.plotNLL()->Draw();
+
+	/*
+
 	ws.var("D")->setConstant(kTRUE); 
 	time_angle.fitTo(*data);
 
@@ -123,8 +140,8 @@ int main() {
 	
 	canvas.cd(1);
 	RooPlot *t_frame = ws.var("t")->frame();
-	data->plotOn(t_frame, RooFit::MarkerSize(0.2));
-//	time_angle.plotOn(t_frame);
+	data->plotOn(t_frame, RooFit::MarkerSize(0.3));
+	time_angle.plotOn(t_frame,RooFit::LineWidth(1));
 	gPad->SetLogy(1);
 	t_frame->Draw();
 
@@ -143,7 +160,7 @@ int main() {
 	RooPlot *phi_frame = ws.var("phi")->frame();
 	data->plotOn(phi_frame,RooFit::MarkerSize(0.2));
 	phi_frame->Draw();
-
+*/
 	canvas.SaveAs("t.png");
 
 
