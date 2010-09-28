@@ -33,6 +33,8 @@
 #include "RooWorkspace.h"
 #include "RooHistPdf.h"
 #include "RooTruthModel.h"
+#include "RooGaussModel.h"
+#include "RooDataHist.h"
 
 #include "RooMCStudy.h"
 
@@ -45,23 +47,43 @@ int main() {
 	RooWorkspace ws;
 //	ws.import(*data);
 
-	ws.factory("{t[-3,15],et[0,1],cpsi[-1,1],ctheta[-1,1],phi[-3.15,3.15],D[-1]");
-	ws.factory("{A02[0.524],All2[0.231],Ap2[0.245],tau_L[1.4],tau_H[1.6],Dm[17.77],beta[0.25,0,1],delta_p[2.95],delta_l[0.2],delta_s[0.2],Fs[0.1]}");
+	ws.factory("{t[-3,12],et[0,1],cpsi[-1,1],ctheta[-1,1],phi[-3.15,3.15],D[-1]");
 
-        ws.factory("GaussModel::resol(t,meanRes[0.],sigmaRes[0.0001,0,1])");
-//        ws.factory("GaussModel::resol(t,meanRes[0.],scaleRes[1.0,0.8,1.2],et)");
+	ws.factory("{A02[0.52,0.0,1.0],A1[0.5,0.0,1.0}");
+	ws.factory("expr::All2('(1-@0)*@1',A02,A1");
+	ws.factory("expr::Ap2('1-@0-@1',A02,All2");
+	
+	ws.factory("{Dm[17.77],beta[-1.58,1.58],delta_p[2.95,-3.15,3.15],delta_l[0.2,-3.15,3.15],delta_s[0.2,-3.15,3.15],Fs[0.0,0,1]}");
+
+//	ws.factory("{tau_L[1.5,0,2.0],tau_H[1.5]}");
+//	ws.factory("expr::tau('2.0*@0*@1/(@0+@1)',tau_L,tau_H)");
+
+	ws.factory("{DeltaGamma[0.09,0.0,0.5],tau[1.5,1.0,2.0]}");
+	ws.factory("expr::tau_L('2.0/((2.0/@0)+@1)',tau,DeltaGamma");
+	ws.factory("expr::tau_H('2.0/((2.0/@0)-@1)',tau,DeltaGamma");
+
+	ws.factory("{rmean[0], rsigma[1,0.8, 1.5]}");
 	RooTruthModel rtrue("rtrue","rtrue", *ws.var("t"));
+	RooGaussModel rgauss("rgauss", "rgauss", *ws.var("t"), *ws.var("rmean"), *ws.var("rsigma"),*ws.var("et"));
+
+
+	*ws.var("A02")= 0;
+	*ws.var("A1")= 0;
+	*ws.var("Dm") = 0; 
+	*ws.var("beta") = 0;
+	*ws.var("delta_p") = 0;
+	*ws.var("delta_l") = 0;
 
 	RooBsTimeAngle time_angle("time_angle", "time_angle",
 		*ws.var("t"),
 		*ws.var("cpsi"),
 		*ws.var("ctheta"),
 		*ws.var("phi"),
-		*ws.var("A02"),
-		*ws.var("All2"),
-		*ws.var("Ap2"),
-		*ws.var("tau_L"),
-		*ws.var("tau_H"),
+		*ws.function("A02"),
+		*ws.function("All2"),
+		*ws.function("Ap2"),
+		*ws.function("tau_L"),
+		*ws.function("tau_H"),
 		*ws.var("Dm"),
 		*ws.var("beta"),
 		*ws.var("delta_p"),
@@ -69,17 +91,19 @@ int main() {
 		*ws.var("delta_s"),
 		*ws.var("Fs"),
 		*ws.var("D"),
-		rtrue);
+		*ws.function("tau"),
+		rgauss);
 //		*((RooResolutionModel*)ws.allResolutionModels().find("resol")));
 
-	RooMCStudy toy(time_angle,time_angle,RooArgSet(*ws.var("t"), *ws.var("cpsi"), *ws.var("ctheta"), *ws.var("phi")));
+//	RooMCStudy toy(time_angle,RooArgSet(*ws.var("t"), *ws.var("cpsi"), *ws.var("ctheta"), *ws.var("phi")),RooFit::FitOptions(RooFit::NumCPU(2)));
 
-	toy.generateAndFit(100,1000);
+//	toy.generateAndFit(100,4000);
 
-	RooDataSet *data = time_angle.generate(RooArgSet(*ws.var("t"), *ws.var("cpsi"), *ws.var("ctheta"), *ws.var("phi")),1000);
+//	RooDataSet *data = time_angle.generate(RooArgSet(*ws.var("t"), *ws.var("cpsi"), *ws.var("ctheta"), *ws.var("phi")),4000,RooFit::Verbose(kTRUE));
+//	*ws.var("D") = -1;
 
 
-/*
+
         TFile fit_file("bs_fit.root");
         TTree* fit_tree = (TTree*) fit_file.Get("tree");
 
@@ -115,33 +139,47 @@ int main() {
 		*ctheta = d_ctheta;
 		*phi = d_phi;
 
+//		if ( (d_epdl/0.0299792458) > 1 || (d_epdl/0.0299792458) < 0.5 ) continue;
+
 		data->add(RooArgSet(*t,*et,*cpsi,*ctheta,*phi));
         }
 
-*/
-	TCanvas canvas("canvas", "canvas", 1000,500);
-	canvas.Divide(2);
+
+/*
+	gROOT->SetStyle("Plain");
+
+	TCanvas canvas("canvas", "canvas", 800,800);
+	canvas.Divide(2,2);
 	canvas.cd(1);
 	gPad->SetMargin(1,1,1,1);
-	toy.plotParam(*ws.var("beta"))->Draw();
+	toy.plotParam(*ws.var("beta"),RooFit::MarkerSize(0.2))->Draw();
 	canvas.cd(2);
 	gPad->SetMargin(1,1,1,1);
-	toy.plotNLL()->Draw();
+	toy.plotError(*ws.var("beta"),RooFit::MarkerSize(0.2))->Draw();
+	canvas.cd(3);
+	gPad->SetMargin(1,1,1,1);
+	toy.plotPull(*ws.var("beta"),RooFit::MarkerSize(0.2),RooFit::FitGauss(kTRUE))->Draw();
+	canvas.cd(4);
+	gPad->SetMargin(1,1,1,1);
+	toy.plotNLL(RooFit::MarkerSize(0.2))->Draw();
+*/
 
-	/*
 
 	ws.var("D")->setConstant(kTRUE); 
-	time_angle.fitTo(*data);
+	time_angle.fitTo(*data,RooFit::Verbose(kTRUE), RooFit::ConditionalObservables(*ws.var("et")), RooFit::NumCPU(2));
 
 	gROOT->SetStyle("Plain");
 
 	TCanvas canvas("canvas", "canvas", 800,800);
 	canvas.Divide(2,2);
-	
+
+	RooAbsData* projData = new RooDataHist("projData","projData",
+ 					   RooArgSet(*et),*data) ;
+
 	canvas.cd(1);
 	RooPlot *t_frame = ws.var("t")->frame();
 	data->plotOn(t_frame, RooFit::MarkerSize(0.3));
-	time_angle.plotOn(t_frame,RooFit::LineWidth(1));
+	time_angle.plotOn(t_frame,RooFit::LineWidth(1),RooFit::ProjWData(*et, *projData));
 	gPad->SetLogy(1);
 	t_frame->Draw();
 
@@ -160,7 +198,7 @@ int main() {
 	RooPlot *phi_frame = ws.var("phi")->frame();
 	data->plotOn(phi_frame,RooFit::MarkerSize(0.2));
 	phi_frame->Draw();
-*/
+
 	canvas.SaveAs("t.png");
 
 

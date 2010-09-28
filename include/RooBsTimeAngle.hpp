@@ -26,11 +26,11 @@ public:
             RooRealVar& cpsi,
             RooRealVar& ctheta,
             RooRealVar& phi,
-            RooRealVar& A02,
-            RooRealVar& All2,
-            RooRealVar& Ap2,
-            RooRealVar& tau_L,
-            RooRealVar& tau_H,
+            RooAbsReal& A02,
+            RooAbsReal& All2,
+            RooAbsReal& Ap2,
+            RooAbsReal& tau_L,
+            RooAbsReal& tau_H,
             RooRealVar& Dm,
             RooRealVar& beta,
             RooRealVar& delta_p,
@@ -38,6 +38,7 @@ public:
             RooRealVar& delta_s,
             RooRealVar& Fs,
             RooRealVar& D,
+            RooAbsReal& tau,
             const RooResolutionModel& model);
 
     RooBsTimeAngle(const RooBsTimeAngle& other, const char* name = 0);
@@ -56,7 +57,7 @@ public:
 
 private:
 
-Double_t HarmonicSphericalY(int l, int m, Double_t ctheta, Double_t phi) const;
+Double_t HarmonicSphericalY(int l, int m) const;
 Double_t acceptance() const;
 
 Double_t rho_B (Int_t bi) const;    //8.19
@@ -103,7 +104,9 @@ protected:
     RooRealProxy _Fs;
     RooRealProxy _D;
 
-    RooFormulaVar _tau;
+    RooRealProxy _tau;
+
+//    RooFormulaVar _tau;
 
     TRandom3 _aleatorio;
 
@@ -123,7 +126,9 @@ protected:
 	static const Double_t e_02p2 = -0.322357;
 
 private:
+	static const bool __optimize = true;
 	static const bool __debug = false;
+	static const bool __debug2 = false;
 
 //    ClassDef(RooBsTimeAngle, 1) // B0s Time and Angular decay PDF
 };
