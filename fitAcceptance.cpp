@@ -26,13 +26,13 @@
 //#include "Fit/FitConfig.h"
 
 
-Double_t RooBsTimeAngle::HarmonicSphericalY(int l, int m, Double_t ctheta, Double_t phi) const {
+Double_t HarmonicSphericalY(int l, int m, Double_t _ctheta, Double_t _phi) {
         if (m==0)
-                return TMath::Sqrt( ((2.0*l+1)*TMath::Gamma(l+1))/(4.0*TMath::Pi()*TMath::Gamma(l+1)) )*ROOT::Math::assoc_legendre(l,0,ctheta);
+                return TMath::Sqrt( ((2.0*l+1)*TMath::Gamma(l+1))/(4.0*TMath::Pi()*TMath::Gamma(l+1)) )*ROOT::Math::assoc_legendre(l,0,_ctheta);
         if (m>0)
-                return TMath::Sqrt( ((2.0*l+1)*TMath::Gamma(l-m+1))/(2.0*TMath::Pi()*TMath::Gamma(l+m+1)) )*ROOT::Math::assoc_legendre(l,m,ctheta)*TMath::Cos(m*phi)*TMath::Power(-1.0,m);
+                return TMath::Sqrt( ((2.0*l+1)*TMath::Gamma(l-m+1))/(2.0*TMath::Pi()*TMath::Gamma(l+m+1)) )*ROOT::Math::assoc_legendre(l,m,_ctheta)*TMath::Cos(m*_phi)*TMath::Power(-1.0,m);
         if (m<0)
-                return TMath::Sqrt( ((2.0*l+1)*TMath::Gamma(l+m+1))/(2.0*TMath::Pi()*TMath::Gamma(l-m+1)) )*ROOT::Math::assoc_legendre(l,-m,ctheta)*TMath::Sin(m*phi);
+                return TMath::Sqrt( ((2.0*l+1)*TMath::Gamma(l+m+1))/(2.0*TMath::Pi()*TMath::Gamma(l-m+1)) )*ROOT::Math::assoc_legendre(l,-m,_ctheta)*TMath::Sin(-m*_phi)*TMath::Power(-1.0,-m);
 }
 
 // Sum of background and peak function
@@ -61,7 +61,7 @@ int main() {
 
 	TH2D* acceptance_histo = new TH2D("acceptance_histo", "acceptance", 20, -1.0, 1.0, 20, -TMath::Pi(), TMath::Pi());
 
-	const char* cut = "mc_match == 1 && mu_plus_nseg==3 && mu_minus_nseg==3";
+	const char* cut = "mc_match == 1";
 
 	acceptance_tree->Draw(">>entry_list", cut, "entrylist");
 	TEntryList *event_list = (TEntryList*)gDirectory->Get("entry_list");
