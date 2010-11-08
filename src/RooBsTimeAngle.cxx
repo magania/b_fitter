@@ -208,19 +208,6 @@
 		Pink  = 0.5*TMath::Exp((sigma*sigma - 2.0*t*tauL)/(2.0*tauL*tauL))*TMath::Erfc((sigma*sigma-t*tauL)/(1.41421356237309515*sigma*tauL));
 		Green = 0.5*TMath::Exp((sigma*sigma - 2.0*t*tauH)/(2.0*tauH*tauH))*TMath::Erfc((sigma*sigma-t*tauH)/(1.41421356237309515*sigma*tauH));
 
-//		TComplex t0(-1.0,-Dm*tau);
-//		TComplex i0 = (t*tau + sigma*sigma*t0)/(1.41421356237309515*sigma*tau);
-//		TComplex e0 = 1.0+Erf(i0);
-//		TComplex t1(-1.0,Dm*tau);
-//		TComplex i1 = (t*tau + sigma*sigma*t1)/(1.41421356237309515*sigma*tau);
-//		TComplex e1 = -1.0-Erf(i1);
-//		TComplex ee = TComplex::Exp(2.0*Dm*sigma*sigma*TComplex::I()/tau)*e0 + TComplex::Exp(2.0*t*Dm*TComplex::I())*e1;
-//		TComplex xx = -(2.0*t*tau*(1.0+TComplex::I()*Dm*tau) + sigma*sigma*(-1.0+Dm*Dm*tau*tau+TComplex::I()*2.0*Dm*tau))/(2.0*tau*tau);
-//		TComplex CRed = 0.25*TComplex::I()*TComplex::Exp(xx)*ee;
-
-//		TComplex bb = TComplex::Exp(2.0*Dm*sigma*sigma*TComplex::I()/tau)*e0 - TComplex::Exp(2.0*t*Dm*TComplex::I())*e1;
-//		TComplex CBlue = 0.25*TComplex::Exp(xx)*bb;
-
 		Double_t i0_re = 0.707106781186547462*(t/sigma - sigma/tau);
 		Double_t i0_im = -0.707106781186547462*Dm*sigma;
 
@@ -257,6 +244,19 @@
 		}
 
 /*
+               TComplex t0(-1.0,-Dm*tau);
+               TComplex i0 = (t*tau + sigma*sigma*t0)/(1.41421356237309515*sigma*tau);
+               TComplex e0 = 1.0+Erf(i0);
+               TComplex t1(-1.0,Dm*tau);
+               TComplex i1 = (t*tau + sigma*sigma*t1)/(1.41421356237309515*sigma*tau);
+               TComplex e1 = -1.0-Erf(i1);
+               TComplex ee = TComplex::Exp(2.0*Dm*sigma*sigma*TComplex::I()/tau)*e0 + TComplex::Exp(2.0*t*Dm*TComplex::I())*e1;
+               TComplex xx = -(2.0*t*tau*(1.0+TComplex::I()*Dm*tau) + sigma*sigma*(-1.0+Dm*Dm*tau*tau+TComplex::I()*2.0*Dm*tau))/(2.0*tau*tau);
+               TComplex CRed = 0.25*TComplex::I()*TComplex::Exp(xx)*ee;
+
+               TComplex bb = TComplex::Exp(2.0*Dm*sigma*sigma*TComplex::I()/tau)*e0 - TComplex::Exp(2.0*t*Dm*TComplex::I())*e1;
+               TComplex CBlue = 0.25*TComplex::Exp(xx)*bb;
+
 		if(__debug || et>=2){
 			cout << "t = " << t << " tau = " << tau << " sigma = " << sigma << endl;
 			cout << (t*tau + sigma*sigma*t0)/(1.41421356237309515*sigma*tau) << endl;
@@ -287,7 +287,6 @@
 			cout << "Rare Blue: "<< CBlue << endl;
 			cout << t << ' ' << et << endl;
 		}
-
 */
 	}
 
@@ -431,25 +430,22 @@
 */
 
 	Double_t result =  ( (0.5-0.5*D)*rho_B + (0.5+0.5*D)*rho_Bbar ) * Acceptance / N;
-//	if ( TMath::Abs(et-0.269455) < 0.0001 )
-//		cout << "et = " << et << "  out = " << result << endl;
-
 	return result;
-//	return ( (0.5-0.5*D)*rho_B + (0.5+0.5*D)*rho_Bbar ) * Acceptance / N;
  } 
 
+/*
 TComplex RooBsTimeAngle::Erf(TComplex z) const{
 	return Erf(z.Re(),z.Im());
 }
 
 TComplex RooBsTimeAngle::Erf(double x0, double y0) const{
-/*	RooComplex w = RooMath::ComplexErrFunc(y0,-x0);
+**	RooComplex w = RooMath::ComplexErrFunc(y0,-x0);
 	TComplex z(x0,y0);
 	TComplex W(w.re(), w.im());
 
 	cout << "Erf["<< z << "] = 1.0 - " << TComplex::Exp(-z*z) << " * " << W << endl;
 	return 1.0 - TComplex::Exp(-z*z)*W;
-*/
+**
 
 	if(__debug) 
 		cout << "Erf: " << x0 << " " << y0 << "I" << endl;
@@ -544,7 +540,7 @@ TComplex RooBsTimeAngle::Erf(double x0, double y0) const{
 
 	return TComplex(1.0-erfc_re, -erfc_im);
 }
-
+*/
 
 Double_t RooBsTimeAngle::HarmonicSphericalY(int l, int m, Double_t ctheta, Double_t phi) const {
         if (m==0)
@@ -629,8 +625,6 @@ void RooBsTimeAngle::I_mu(TComplex &I_mu, Double_t fs, Double_t delta_s) const {
 
 Int_t RooBsTimeAngle::getAnalyticalIntegral(RooArgSet& allVars, RooArgSet& analVars, const char* /* rangeName*/) const
 {
-   cout << "Integrate .." << endl;
-   allVars.Print();
   if (matchArgs(allVars, analVars, t, cpsi, ctheta, phi)) return 1;
 /*  if (matchArgs(allVars, analVars, cpsi, ctheta, phi)) return 2;
   if (matchArgs(allVars, analVars,       ctheta, phi)) return 3;
@@ -669,8 +663,7 @@ void RooBsTimeAngle::generateEvent(Int_t code) {
     static long calls = 0;
     static long cycles = 0;
     calls++;
-//	cout << "Generate ..." << et <<endl;
-//    Double_t max = 0.2;
+
     Double_t max = 0.2;
     Double_t value = 0;
 
@@ -678,9 +671,7 @@ void RooBsTimeAngle::generateEvent(Int_t code) {
     while (1) {
     	cycles++;
 //	Double_t tauH = 2.0/((2.0/tau)-DG);
-//        t = -tauH * log(RooRandom::uniform(&_aleatorio));
-//        t = RooRandom::uniform(&_aleatorio)*20 - 4;
-        t = RooRandom::uniform(&_aleatorio)*30.0;
+        t = RooRandom::uniform(&_aleatorio)*25.0 - 5.0;
         switch (code) {
             case 1:
                 cpsi   = RooRandom::uniform(&_aleatorio) * (cpsi.max()   - cpsi.min())   + cpsi.min();
@@ -706,15 +697,17 @@ void RooBsTimeAngle::generateEvent(Int_t code) {
         if ( value > max) {
                 cout << "ERROR: Value > max " << value << endl;
 		exit(1);
-//            max = value * 1.05;
         }
 
         Double_t rand = RooRandom::uniform(&_aleatorio) * max;
-        if (__debug) cout << rand << ' ' << value << endl;
-        if (rand < value)
+
+	if (__debug) cout << rand << ' ' << value << endl;
+
+	if (rand < value)
             break;
     }
-    if (calls%10000 ==0)
-	    cout << "Gen: calls = " << calls << "  cycles = " << cycles << "  cycles/calls =" << ((double)cycles)/calls << endl;
+
+    if (calls%5000 ==0)
+	    cout << "Gen: calls = " << calls << "  cycles = " << cycles << "  cycles/calls = " << ((double)cycles)/calls  << " I = 125.663706144"<< endl;
 }
 

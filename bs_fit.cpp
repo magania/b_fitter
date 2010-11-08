@@ -167,7 +167,7 @@ int main() {
 	toy.plotNLL(RooFit::MarkerSize(0.2))->Draw();
 */
 
-	ws.factory("Landau::error_signal(et,mean[0.07,0,1],sigma[0.01,0,1])");
+	ws.factory("Landau::error_signal(et,mean[0.0741194,0,1],sigma[0.0175981,0,1])");
 	ws.pdf("error_signal")->fitTo(*data);
 
 //	time_angle.fitTo(*data,RooFit::Verbose(kTRUE), RooFit::ConditionalObservables(*ws.var("et")), RooFit::NumCPU(2));

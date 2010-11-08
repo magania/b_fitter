@@ -94,19 +94,22 @@ protected:
 
 private:
 
-Double_t HarmonicSphericalY(int l, int m, Double_t ctheta, Double_t phi) const;
-void acceptance(Double_t& acceptance, Double_t ctheta, Double_t phi) const;
-void rho_Bb(Double_t& rho_Bb, Double_t fs, Double_t& P_Bb, Double_t& Q_Bb, TComplex& CDAminusB, TComplex& CDAplusB, Double_t& fb_minus_sq, TComplex &fb_fb_star, TComplex& I_mu) const;    //8.19 8.20
-void P_Bb(Double_t &P_Bb, Double_t &CDAplusAplus, Double_t &CDAminusAminus, TComplex &CDAplusAminus, Double_t &fb_plus_sq, Double_t &fb_minus_sq, TComplex &fb_fb_star) const ;    //5.5 5.6
-void Q_Bb(Double_t &Q_Bb, Double_t &CDBB, Double_t &fb_minus_sq) const ;    //8.15 8.16
-void AplusK(TComplex* AplusK, Double_t a0, Double_t al, Double_t delta_l) const ;    // 5.2
-void AminusK(TComplex& AminusK, Double_t ap, Double_t delta_p) const;    // 5.3
-void nhat(Double_t* nhat, Double_t ctheta, Double_t phi) const;    // 3.6
-void CrossDot(TComplex &CD, TComplex* A, TComplex* B, Double_t* n) const;
-void I_mu(TComplex &I_mu, Double_t fs, Double_t delta_s) const;    //8.10
+inline Double_t HarmonicSphericalY(int l, int m, Double_t ctheta, Double_t phi) const;
+inline void acceptance(Double_t& acceptance, Double_t ctheta, Double_t phi) const;
+inline void rho_Bb(Double_t& rho_Bb, Double_t fs, Double_t& P_Bb, Double_t& Q_Bb, TComplex& CDAminusB, TComplex& CDAplusB, Double_t& fb_minus_sq, TComplex &fb_fb_star, TComplex& I_mu) const;    //8.19 8.20
+inline void P_Bb(Double_t &P_Bb, Double_t &CDAplusAplus, Double_t &CDAminusAminus, TComplex &CDAplusAminus, Double_t &fb_plus_sq, Double_t &fb_minus_sq, TComplex &fb_fb_star) const ;    //5.5 5.6
+inline void Q_Bb(Double_t &Q_Bb, Double_t &CDBB, Double_t &fb_minus_sq) const ;    //8.15 8.16
+inline void AplusK(TComplex* AplusK, Double_t a0, Double_t al, Double_t delta_l) const ;    // 5.2
+inline void AminusK(TComplex& AminusK, Double_t ap, Double_t delta_p) const;    // 5.3
+inline void nhat(Double_t* nhat, Double_t ctheta, Double_t phi) const;    // 3.6
+inline void CrossDot(TComplex &CD, TComplex* A, TComplex* B, Double_t* n) const;
+inline void I_mu(TComplex &I_mu, Double_t fs, Double_t delta_s) const;    //8.10
 
+/*
 TComplex Erf(TComplex z) const;
 TComplex Erf(double x0, double y0) const;
+*/
+
 
 static const Double_t e_00p0 = 2.78142;
 static const Double_t e_01n1 = -0.00650078;
@@ -118,13 +121,15 @@ static const Double_t e_02p0 = 0.130073;
 static const Double_t e_02p1 = 0.0139719;
 static const Double_t e_02p2 = -0.211069;
 
+
 bool _resolution;
 
 static const bool __debug = false;
 static const bool __debug2 = false;
 static const bool __debug3 = false;
 static const bool __debug4 = false;
-static const bool __fast = true;
+
+static const bool __fast = false;
 
 //  ClassDef(RooBsTimeAngle,1) // Your description goes here...
 };
