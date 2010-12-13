@@ -18,7 +18,7 @@
  #include "RooComplex.h"
  #include "RooMath.h"
 
- //ClassImp(RooBsTimeAngle) 
+ ClassImp(RooBsTimeAngle) 
 
  RooBsTimeAngle::RooBsTimeAngle(const char *name, const char *title, 
                         RooAbsReal& _t,
@@ -417,6 +417,11 @@
                 cout << "IAplusXB = " << IAplusXB << endl;
                 cout << "IAminusXB = " << IAminusXB << endl;
         }
+       if ( t < -1.8 && et < 0.08  ){
+          cout << "NaN? (" << t << ',' << et  << ") "  << rho_B << ' ' << rho_Bbar << endl;
+          return 0.0;
+       }
+
 
         Double_t N = (0.5-0.5*D)*I_rho_B + (0.5+0.5*D)*I_rho_Bbar ;
 
@@ -430,6 +435,9 @@
 */
 
 	Double_t result =  ( (0.5-0.5*D)*rho_B + (0.5+0.5*D)*rho_Bbar ) * Acceptance / N;
+
+	if (result < 0.000000001 ) return 0.0;
+
 	return result;
  } 
 
@@ -670,8 +678,9 @@ void RooBsTimeAngle::generateEvent(Int_t code) {
     Double_t G;
     while (1) {
     	cycles++;
-//	Double_t tauH = 2.0/((2.0/tau)-DG);
-        t = RooRandom::uniform(&_aleatorio)*25.0 - 5.0;
+	Double_t tauH = 2.0/((2.0/tau)-DG);
+	t = - tauH * log(RooRandom::uniform(&_aleatorio));
+//        t = RooRandom::uniform(&_aleatorio)*25.0 - 5.0;
         switch (code) {
             case 1:
                 cpsi   = RooRandom::uniform(&_aleatorio) * (cpsi.max()   - cpsi.min())   + cpsi.min();
@@ -685,7 +694,7 @@ void RooBsTimeAngle::generateEvent(Int_t code) {
                 }
 
                 if (__debug) cout << "t cpsi ctheta phi = " << t << ' ' << cpsi << ' ' << ctheta << ' ' << phi << endl;
-                value = evaluate();// * TMath::Exp(t/tauH);
+                value = evaluate() * TMath::Exp(t/tauH);
                 if(__debug2) exit(0);
 
                 break;

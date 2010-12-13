@@ -8,7 +8,7 @@ Pull(){
 
 	RooDataSet* data = new RooDataSet("data","data", ws2->argSet("DG,tau,beta,delta_l,delta_p,delta_s,fs,s,A02,Al2"));
 
-	for(int i=0; i<25000; i++){
+	for(int i=0; i<10; i++){
 		TString fit_name = "fit_";
 		fit_name+=i;
 
@@ -18,7 +18,7 @@ Pull(){
 			continue;
 		}
 		//cout << fit_result->minNll() << endl;
-		if ( fit_result->minNll() < 17500 )
+//		if ( fit_result->minNll() < 17500 )
 			data->add(fit_result->floatParsFinal());
 	}
 

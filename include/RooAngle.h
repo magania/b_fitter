@@ -46,6 +46,7 @@ public:
 
   Int_t getAnalyticalIntegral(RooArgSet& allVars, RooArgSet& analVars, const char* rangeName=0) const ;
   Double_t analyticalIntegral(Int_t code, const char* rangeName=0) const ;
+  ClassDef(RooAngle,1) // Bkg Angular PDF
 
 protected:
 
@@ -72,10 +73,6 @@ protected:
  
   Double_t HarmonicSphericalY(int l, int m) const ;
   Double_t evaluate() const ;
-
-private:
-
-//  ClassDef(RooAngle,1) // Your description goes here...
 };
  
 #endif

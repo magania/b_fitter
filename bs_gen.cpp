@@ -40,71 +40,63 @@
 
 #include "TFile.h"
 
-int main() {
-	TFile root_file("toymc.root", "RECREATE");
+int main (int argc, char **argv)
+{
+  const char* chInFile = "ws.root";
+  const char* chOutFile = "ws_gen.root";
+  int numEvents = 135189;
 
-	RooWorkspace ws;
+  char option_char;
+  while ( (option_char = getopt(argc,argv, "i:o:n:")) != EOF )
+    switch (option_char)
+      {
+         case 'i': chInFile = optarg; break;
+         case 'o': chOutFile = optarg; break;
+         case 'n': numEvents = atoi(optarg); break;
+         case '?': fprintf (stderr,
+                            "usage: %s [i<input file> o<output file>]\n", argv[0]);
+      }
 
-	ws.factory("{t[-5.0,20.0],et[0,2],cpsi[-1,1],ctheta[-1,1],phi[-3.141592654,3.141592654],D[1]");
-	
-	ws.factory("{DG[0.09,0,1],Dm[17.77],tau[1.5,1.0,2.0],beta[0.25,-1.6,1.6],delta_l[0.2,-INF,INF],delta_p[2.95,-INF,INF],delta_s[0.2,-INF,INF],fs[0.2,0,1],s[1.0,0.8,1.5]}");
-	ws.factory("{A02[0.6,0,1],Al2[0.3,0,1]}");
-	
-	ws.factory("expr:Ap2('TMath::Sqrt(1-@0-@1)',A02,Al2)");
+  cout << "In File = " << chInFile << endl;
+  cout << "Out File = " << chOutFile << endl;
+  cout << "Num Events = " << numEvents << endl;
 
-        ws.factory("expr:z('TMath::Cos(2.0*@0)*@1*@2/2.0',beta,DG,tau");
-        ws.factory("expr:y('(1+@0)/(1-@0)',z");
-        ws.factory("expr:ap('TMath::Sqrt(@0*@1/(@1+(1.0-@1)*@2))',Ap2,y,Ap2)");
-        ws.factory("expr:al('TMath::Sqrt(@0*@1/(@1+(1.0-@1)*@2))',Al2,y,Ap2)");
-        ws.factory("expr:a0('TMath::Sqrt(@0*@1/(@1+(1.0-@1)*@2))',A02,y,Ap2)");
+  TFile inFile(chInFile);
+  RooWorkspace* ws = (RooWorkspace*) inFile.Get("rws");
+  TFile outFile(chOutFile,"RECREATE");
 
-        RooBsTimeAngle time_angle("time_angle", "time_angle",
-                *ws.var("t"),
-                *ws.var("et"),
-                *ws.var("cpsi"),
-                *ws.var("ctheta"),
-                *ws.var("phi"),
-                *ws.var("D"),
-                *ws.function("a0"),
-                *ws.function("al"),
-                *ws.function("ap"),
-                *ws.var("DG"),
-                *ws.var("Dm"),
-                *ws.var("tau"),
-                *ws.var("beta"),
-                *ws.var("delta_l"),
-                *ws.var("delta_p"),
-                *ws.var("delta_s"),
-                *ws.var("fs"),
-                *ws.var("s"));
+  int numSignal = numEvents * ws->var("xs")->getVal();
+  int numBkg = numEvents - numSignal;
 
-        ws.factory("Landau::error_signal(et,mean[0.0741194,0,1],sigma[0.0175981,0,1])");
+  ws->factory("Gaussian::dilutionGauss(d,0,0.276)");
+  ws->factory("SUM::dSignalPDF(xds[0.109]*dilutionGauss,TruthModel(d))");
+  ws->factory("SUM::dBkgPDF(xdb[0.109]*dilutionGauss,TruthModel(d))");
 
+  RooDataSet* dSignalData = ws->pdf("dSignalPDF")->generate(RooArgSet(*ws->var("d")),numSignal);
+  RooDataSet *dataSignal = ws->pdf("signal")->generate(RooArgSet(*ws->var("m"),*ws->var("t"),*ws->var("et"),*ws->var("cpsi"),*ws->var("ctheta"),*ws->var("phi")), RooFit::ProtoData(*dSignalData));
+ 
+  ws->factory("Decay::negativeDecay2(t,tauNeg,resolution,Flipped)");
+  ws->factory("Decay::positiveDecay2(t,tauPos,resolution,SingleSided)");
+  ws->factory("Decay::positiveLongDecay2(t,tauPosPos,resolution,SingleSided)");
 
-	for (int i=0; i<10; i++){
-		TString data_name = "data_";
-		data_name+=i;
-		TString fit_name = "fit_";
-		fit_name+=i;
-		RooDataSet* et_data = ws.pdf("error_signal")->generate(*ws.var("et"),5000);
+  ws->factory("RSUM::tBkg2(xr*resolution,xn*negativeDecay2,xp*positiveDecay2,positiveLongDecay2");
 
-		*ws.var("A02")= 0.6;
-		*ws.var("Al2")= 0.3;
-		*ws.var("DG")= 0.09;
-		*ws.var("tau")= 1.5;
-		*ws.var("beta")= 0.25;
-		*ws.var("delta_l")= 0.2;
-		*ws.var("delta_p")= 2.95;
-		*ws.var("delta_s")= 0.2;
-		*ws.var("fs")= 0.2;
-		*ws.var("s")= 1.0;
+  ws->factory("PROD::timeBkg2(tBkg2|et,errorBkg)");
+  ws->factory("PROD::background2(massBkg,timeBkg2,angle,dBkgPDF)");
 
-		RooDataSet *data = time_angle.generate(RooArgSet(*ws.var("t"), *ws.var("cpsi"), *ws.var("ctheta"), *ws.var("phi")), RooFit::ProtoData(*et_data));
-		data->Write(data_name);
+  RooDataSet* dBkgData = ws->pdf("dBkgPDF")->generate(RooArgSet(*ws->var("d")),numBkg);
+  RooDataSet* dataBkg = ws->pdf("background2")->generate(RooArgSet(*ws->var("m"),*ws->var("t"),*ws->var("et"),*ws->var("cpsi"),*ws->var("ctheta"),*ws->var("phi")), numBkg);
 
-		RooFitResult *fit_result = time_angle.fitTo(*data, RooFit::Save(kTRUE), RooFit::ConditionalObservables(*ws.var("et")), RooFit::NumCPU(2), RooFit::PrintLevel(-1));
-		fit_result->Write(fit_name);
-	}
+  dataBkg->merge(dBkgData);
+  dataBkg->SetName("dataBkg");
+  ws->import(*dataBkg);
+
+  dataSignal->append(*dataBkg);
+  dataSignal->SetName("data");
+  ws->import(*dataSignal);
+
+  //RooFitResult *fit_result = ws->pdf("model")->fitTo(*ws->data("data"), RooFit::Save(kTRUE), RooFit::ConditionalObservables(*ws->var("d")), RooFit::NumCPU(2), RooFit::PrintLevel(3));
+
 /*
         gROOT->SetStyle("Plain");
 
@@ -112,23 +104,21 @@ int main() {
         canvas.Divide(2);
 
         canvas.cd(1);
-        RooPlot *t_frame = ws.var("t")->frame();
-        data->plotOn(t_frame, RooFit::MarkerSize(0.3));
+        RooPlot *t_frame = ws->var("t")->frame();
+        ws->data("data")->plotOn(t_frame, RooFit::MarkerSize(0.3));
         gPad->SetLogy(1);
         t_frame->Draw();
 
         canvas.cd(2);
-        RooPlot *et_frame = ws.var("et")->frame();
-        data->plotOn(et_frame,RooFit::MarkerSize(0.2));
-        ws.pdf("error_signal")->plotOn(et_frame);
+        RooPlot *et_frame = ws->var("et")->frame();
+        ws->data("data")->plotOn(et_frame,RooFit::MarkerSize(0.2));
+        ws->pdf("errorSignal")->plotOn(et_frame);
         gPad->SetLogy(1);
         et_frame->Draw();
 
         canvas.SaveAs("t.png"); 
-*/
 
-	root_file.Close();
-/*
+
         canvas.cd(2);
         gPad->SetLogy(0);
         RooPlot *cpsi_frame = ws.var("cpsi")->frame();
@@ -150,8 +140,12 @@ int main() {
         data2->plotOn(phi_frame,
                 RooFit::LineColor(kBlue), RooFit::DrawOption("L"));
         phi_frame->Draw();
+
+       canvas.SaveAs("t.png");
+
 */
-//      canvas.SaveAs("t.png");
 
-
+  ws->Write("rws");
+  outFile.Close();
+  inFile.Close();
 }

@@ -14,7 +14,7 @@
  #include <math.h> 
  #include "TMath.h" 
 
-// ClassImp(RooErrPdf) 
+ ClassImp(RooErrPdf) 
 
  RooErrPdf::RooErrPdf(const char *name, const char *title, 
                         RooAbsReal& _x,

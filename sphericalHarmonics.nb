@@ -1,0 +1,266 @@
+(* Content-type: application/mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 7.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       145,          7]
+NotebookDataLength[      8348,        256]
+NotebookOptionsPosition[      7875,        235]
+NotebookOutlinePosition[      8212,        250]
+CellTagsIndexPosition[      8169,        247]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"SphericalHarmonicR", "[", 
+    RowBox[{"l_", ",", "m_", ",", "\[Theta]_", ",", "\[Phi]_"}], "]"}], " ", ":=",
+    " ", 
+   RowBox[{"Which", "[", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"m", "\[Equal]", "0"}], ",", 
+     RowBox[{"SphericalHarmonicY", "[", 
+      RowBox[{"l", ",", "m", ",", "\[Theta]", ",", "\[Phi]"}], "]"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"m", ">", "0"}], ",", 
+     RowBox[{
+      FractionBox["1", 
+       RowBox[{"Sqrt", "[", "2", "]"}]], 
+      RowBox[{"(", 
+       RowBox[{
+        RowBox[{"SphericalHarmonicY", "[", 
+         RowBox[{"l", ",", "m", ",", "\[Theta]", ",", "\[Phi]"}], "]"}], " ", 
+        "+", " ", 
+        RowBox[{
+         RowBox[{
+          RowBox[{"(", 
+           RowBox[{"-", "1"}], ")"}], "^", "m"}], " ", 
+         RowBox[{"SphericalHarmonicY", "[", 
+          RowBox[{"l", ",", 
+           RowBox[{"-", "m"}], ",", "\[Theta]", ",", "\[Phi]"}], "]"}]}]}], 
+       ")"}]}], ",", "\[IndentingNewLine]", 
+     RowBox[{"m", "<", "0"}], ",", 
+     RowBox[{
+      FractionBox["1", 
+       RowBox[{"I", " ", 
+        RowBox[{"Sqrt", "[", "2", "]"}]}]], 
+      RowBox[{"(", 
+       RowBox[{
+        RowBox[{"SphericalHarmonicY", "[", 
+         RowBox[{"l", ",", 
+          RowBox[{"-", "m"}], ",", "\[Theta]", ",", "\[Phi]"}], "]"}], " ", 
+        "-", " ", 
+        RowBox[{
+         RowBox[{
+          RowBox[{"(", 
+           RowBox[{"-", "1"}], ")"}], "^", 
+          RowBox[{"(", 
+           RowBox[{"-", "m"}], ")"}]}], " ", 
+         RowBox[{"SphericalHarmonicY", "[", 
+          RowBox[{"l", ",", "m", ",", "\[Theta]", ",", "\[Phi]"}], "]"}]}]}], 
+       ")"}]}]}], "\[IndentingNewLine]", "]"}]}], 
+  "\[IndentingNewLine]"}]], "Input",
+ CellChangeTimes->{{3.492850085735833*^9, 3.492850125263549*^9}, {
+  3.4928501819889812`*^9, 3.492850386673044*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"Sum", "[", "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"\[Epsilon]", "[", 
+      RowBox[{"l", ",", "m"}], "]"}], " ", 
+     RowBox[{"SphericalHarmonicR", "[", 
+      RowBox[{"l", ",", "m", ",", "\[Theta]", ",", "\[Phi]"}], "]"}]}], ",", 
+    "\[IndentingNewLine]", 
+    RowBox[{"{", 
+     RowBox[{"l", ",", "0", ",", "2"}], "}"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"m", ",", 
+      RowBox[{"-", "l"}], ",", "l"}], "}"}]}], "]"}], " ", "//", 
+  "FullSimplify"}]], "Input",
+ CellChangeTimes->{{3.492849967209855*^9, 3.4928499759275*^9}, {
+  3.492850391779937*^9, 3.492850406077956*^9}, {3.4928505133266277`*^9, 
+  3.4928505319570217`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  FractionBox["1", 
+   RowBox[{"8", " ", 
+    SqrtBox["\[Pi]"]}]], 
+  RowBox[{
+   SuperscriptBox["\[ExponentialE]", 
+    RowBox[{
+     RowBox[{"-", "2"}], " ", "\[ImaginaryI]", " ", "\[Phi]"}]], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     RowBox[{"Cos", "[", 
+      RowBox[{"2", " ", "\[Phi]"}], "]"}], "+", 
+     RowBox[{"\[ImaginaryI]", " ", 
+      RowBox[{"Sin", "[", 
+       RowBox[{"2", " ", "\[Phi]"}], "]"}]}]}], ")"}], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     RowBox[{"4", " ", 
+      RowBox[{"\[Epsilon]", "[", 
+       RowBox[{"0", ",", "0"}], "]"}]}], "+", 
+     RowBox[{"4", " ", 
+      SqrtBox["3"], " ", 
+      RowBox[{"Cos", "[", "\[Theta]", "]"}], " ", 
+      RowBox[{"\[Epsilon]", "[", 
+       RowBox[{"1", ",", "0"}], "]"}]}], "+", 
+     RowBox[{
+      SqrtBox["5"], " ", 
+      RowBox[{"(", 
+       RowBox[{"1", "+", 
+        RowBox[{"3", " ", 
+         RowBox[{"Cos", "[", 
+          RowBox[{"2", " ", "\[Theta]"}], "]"}]}]}], ")"}], " ", 
+      RowBox[{"\[Epsilon]", "[", 
+       RowBox[{"2", ",", "0"}], "]"}]}], "-", 
+     RowBox[{"4", " ", 
+      SqrtBox["3"], " ", 
+      RowBox[{"Sin", "[", "\[Theta]", "]"}], " ", 
+      RowBox[{"(", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"Sin", "[", "\[Phi]", "]"}], " ", 
+         RowBox[{"\[Epsilon]", "[", 
+          RowBox[{"1", ",", 
+           RowBox[{"-", "1"}]}], "]"}]}], "+", 
+        RowBox[{
+         RowBox[{"Cos", "[", "\[Phi]", "]"}], " ", 
+         RowBox[{"\[Epsilon]", "[", 
+          RowBox[{"1", ",", "1"}], "]"}]}], "+", 
+        RowBox[{
+         SqrtBox["5"], " ", 
+         RowBox[{"Cos", "[", "\[Theta]", "]"}], " ", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"Sin", "[", "\[Phi]", "]"}], " ", 
+            RowBox[{"\[Epsilon]", "[", 
+             RowBox[{"2", ",", 
+              RowBox[{"-", "1"}]}], "]"}]}], "+", 
+           RowBox[{
+            RowBox[{"Cos", "[", "\[Phi]", "]"}], " ", 
+            RowBox[{"\[Epsilon]", "[", 
+             RowBox[{"2", ",", "1"}], "]"}]}]}], ")"}]}]}], ")"}]}], "+", 
+     RowBox[{"2", " ", 
+      SqrtBox["15"], " ", 
+      SuperscriptBox[
+       RowBox[{"Sin", "[", "\[Theta]", "]"}], "2"], " ", 
+      RowBox[{"(", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"Sin", "[", 
+          RowBox[{"2", " ", "\[Phi]"}], "]"}], " ", 
+         RowBox[{"\[Epsilon]", "[", 
+          RowBox[{"2", ",", 
+           RowBox[{"-", "2"}]}], "]"}]}], "+", 
+        RowBox[{
+         RowBox[{"Cos", "[", 
+          RowBox[{"2", " ", "\[Phi]"}], "]"}], " ", 
+         RowBox[{"\[Epsilon]", "[", 
+          RowBox[{"2", ",", "2"}], "]"}]}]}], ")"}]}]}], ")"}]}]}]], "Output",\
+
+ CellChangeTimes->{{3.492849971358203*^9, 3.492849976677524*^9}, 
+   3.4928503932097816`*^9, 3.4928505181896687`*^9, 3.49285057627105*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"Integrate", "[", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"Sum", "[", "\[IndentingNewLine]", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"\[Epsilon]", "[", 
+         RowBox[{"l", ",", "m"}], "]"}], " ", 
+        RowBox[{"SphericalHarmonicR", "[", 
+         RowBox[{"l", ",", "m", ",", "\[Theta]", ",", "\[Phi]"}], "]"}]}], 
+       ",", "\[IndentingNewLine]", 
+       RowBox[{"{", 
+        RowBox[{"l", ",", "0", ",", "2"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"m", ",", 
+         RowBox[{"-", "l"}], ",", "l"}], "}"}]}], "]"}], ",", 
+     "\[IndentingNewLine]", 
+     RowBox[{"{", 
+      RowBox[{"\[Theta]", ",", 
+       RowBox[{"-", "Pi"}], ",", "Pi"}], "}"}]}], "]"}], " ", "//", "N"}], 
+  "\[IndentingNewLine]"}]], "Input",
+ CellChangeTimes->{{3.492849819332131*^9, 3.492849940212331*^9}, {
+  3.492850410827281*^9, 3.4928504369948473`*^9}, {3.4928504973166237`*^9, 
+  3.492850499708557*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"1.7724538509055159`", " ", 
+   RowBox[{"\[Epsilon]", "[", 
+    RowBox[{"0.`", ",", "0.`"}], "]"}]}], "+", 
+  RowBox[{"0.9908318244015027`", " ", 
+   RowBox[{"(", 
+    RowBox[{
+     RowBox[{"1.7320508075688772`", " ", 
+      RowBox[{"Sin", "[", 
+       RowBox[{"2.`", " ", "\[Phi]"}], "]"}], " ", 
+      RowBox[{"\[Epsilon]", "[", 
+       RowBox[{"2.`", ",", 
+        RowBox[{"-", "2.`"}]}], "]"}]}], "+", 
+     RowBox[{"\[Epsilon]", "[", 
+      RowBox[{"2.`", ",", "0.`"}], "]"}], "+", 
+     RowBox[{"1.7320508075688772`", " ", 
+      RowBox[{"Cos", "[", 
+       RowBox[{"2.`", " ", "\[Phi]"}], "]"}], " ", 
+      RowBox[{"\[Epsilon]", "[", 
+       RowBox[{"2.`", ",", "2.`"}], "]"}]}]}], ")"}]}]}]], "Output",
+ CellChangeTimes->{
+  3.492849869797305*^9, {3.492849915716054*^9, 3.492849940807632*^9}, {
+   3.492850422148348*^9, 3.492850442220269*^9}, 3.492850502146388*^9}]
+}, Open  ]]
+},
+WindowSize->{1068, 658},
+WindowMargins->{{Automatic, 83}, {Automatic, 7}},
+FrontEndVersion->"7.0 for Linux x86 (64-bit) (November 11, 2008)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[545, 20, 1873, 51, 186, "Input"],
+Cell[CellGroupData[{
+Cell[2443, 75, 693, 18, 77, "Input"],
+Cell[3139, 95, 2804, 82, 102, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[5980, 182, 968, 25, 143, "Input"],
+Cell[6951, 209, 908, 23, 31, "Output"]
+}, Open  ]]
+}
+]
+*)
+
+(* End of internal cache information *)
+

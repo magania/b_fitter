@@ -14,7 +14,7 @@
  #include <math.h> 
  #include "TMath.h" 
 
- //ClassImp(RooAngle) 
+ ClassImp(RooAngle) 
 
  RooAngle::RooAngle(const char *name, const char *title, 
                         RooAbsReal& _cpsi,

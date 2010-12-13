@@ -11,26 +11,26 @@ createDataset(){
    RooRealVar cpsi("cpsi", "cos(#psi)", -1, 1);
    RooRealVar ctheta("ctheta", "cos(#theta)", -1 , 1);
    RooRealVar phi("phi", "#phi", -TMath::Pi(), TMath::Pi());
-   RooRealVar D("D", "D", -1, 1);
+   RooRealVar d("d", "d", -1, 1);
   
 
-   RooDataSet* data = new RooDataSet("data","data",RooArgSet(m,t,et,cpsi,ctheta,phi,D));
-   RooDataSet* dataBkg = new RooDataSet("dataBkg","dataBkg",RooArgSet(m,t,et,cpsi,ctheta,phi,D));
+   RooDataSet* data = new RooDataSet("data","data",RooArgSet(m,t,et,cpsi,ctheta,phi,d));
+   RooDataSet* dataBkg = new RooDataSet("dataBkg","dataBkg",RooArgSet(m,t,et,cpsi,ctheta,phi,d));
 
    TCut* cut = new TCut("mu_plus_nseg==3 && mu_minus_nseg==3");
    tree->Draw(">>entry_list", *cut, "entrylist");
    TEntryList* event_list = (TEntryList*) out_file->Get("entry_list");
 
-   Double_t dM, dT, dEt, dCpsi, dCtheta, dPhi, dD;
-   Int_t dDDefined;
+   Double_t dM, dT, dEt, dCpsi, dCtheta, dPhi, dd;
+   Int_t ddDefined;
    tree->SetBranchAddress("bs_mass", &dM);
    tree->SetBranchAddress("bs_pdl", &dT);
    tree->SetBranchAddress("bs_epdl", &dEt);
    tree->SetBranchAddress("bs_angle_cpsi", &dCpsi);
    tree->SetBranchAddress("bs_angle_ctheta", &dCtheta);
    tree->SetBranchAddress("bs_angle_phi", &dPhi);
-   tree->SetBranchAddress("newtag_ost", &dD);
-   tree->SetBranchAddress("newtag_ost_defined", &dDDefined);
+   tree->SetBranchAddress("newtag_ost", &dd);
+   tree->SetBranchAddress("newtag_ost_defined", &ddDefined);
 
 
    for (Long_t i=0; i<event_list->GetN(); i++){
@@ -42,18 +42,15 @@ createDataset(){
        cpsi=dCpsi;
        ctheta=dCtheta;
        phi=dPhi;
-       D=dD;
+       d=ddDefined==1?dd:0.0;
 
-       D=0;
-
-       data->add(RooArgSet(m,t,et,cpsi,ctheta,phi,D));
+       data->add(RooArgSet(m,t,et,cpsi,ctheta,phi,d));
        if (dM<5.2 || dM>5.6)
-           dataBkg->add(RooArgSet(m,t,et,cpsi,ctheta,phi,D));
+           dataBkg->add(RooArgSet(m,t,et,cpsi,ctheta,phi,d));
    }
 
    rws->import(*data);
    rws->import(*dataBkg);
    rws->Write("rws");
    out_file->Close();
-
 }

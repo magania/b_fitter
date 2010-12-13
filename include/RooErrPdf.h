@@ -26,7 +26,7 @@ public:
   inline virtual ~RooErrPdf() { }
   Int_t getAnalyticalIntegral(RooArgSet& allVars, RooArgSet& analVars, const char* /*rangeName*/) const ;
   Double_t analyticalIntegral(Int_t code, const char* rangeName) const ;
-
+  ClassDef(RooErrPdf,1) // PDL error PDF
 
 protected:
 
@@ -37,9 +37,7 @@ protected:
   
   Double_t evaluate() const ;
 
-private:
 
-//  ClassDef(RooErrPdf,1) // Your description goes here...
 };
  
 #endif

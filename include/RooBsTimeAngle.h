@@ -16,7 +16,7 @@
 #include "TComplex.h"
 #include "Math/SpecFuncMathMore.h"
 #include "TRandom3.h"
- 
+
 class RooBsTimeAngle : public RooAbsPdf {
 public:
   RooBsTimeAngle() {} ; 
@@ -61,6 +61,7 @@ public:
   RooBsTimeAngle(const RooBsTimeAngle& other, const char* name=0) ;
   virtual TObject* clone(const char* newname) const { return new RooBsTimeAngle(*this,newname); }
   inline virtual ~RooBsTimeAngle() { }
+  ClassDef(RooBsTimeAngle,1) // B0s Time and Angular decay PDF
 
 protected:
 
@@ -130,8 +131,6 @@ static const bool __debug3 = false;
 static const bool __debug4 = false;
 
 static const bool __fast = false;
-
-//  ClassDef(RooBsTimeAngle,1) // Your description goes here...
 };
  
 #endif
