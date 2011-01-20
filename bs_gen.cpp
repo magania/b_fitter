@@ -44,29 +44,33 @@ int main (int argc, char **argv)
 {
   const char* chInFile = "ws.root";
   const char* chOutFile = "ws_gen.root";
-  int numEvents = 135189;
+  int numSignal = 10000;
+  int numBkg = 100000;
 
   char option_char;
-  while ( (option_char = getopt(argc,argv, "i:o:n:")) != EOF )
+  while ( (option_char = getopt(argc,argv, "i:o:s:b:")) != EOF )
     switch (option_char)
       {
          case 'i': chInFile = optarg; break;
          case 'o': chOutFile = optarg; break;
-         case 'n': numEvents = atoi(optarg); break;
+         case 's': numSignal = atoi(optarg); break;
+         case 'b': numBkg = atoi(optarg); break;
          case '?': fprintf (stderr,
                             "usage: %s [i<input file> o<output file>]\n", argv[0]);
       }
 
   cout << "In File = " << chInFile << endl;
   cout << "Out File = " << chOutFile << endl;
-  cout << "Num Events = " << numEvents << endl;
+  cout << "Signal Events = " << numSignal << endl;
+  cout << "Bkg Events = " << numBkg << endl;
 
   TFile inFile(chInFile);
   RooWorkspace* ws = (RooWorkspace*) inFile.Get("rws");
   TFile outFile(chOutFile,"RECREATE");
 
-  int numSignal = numEvents * ws->var("xs")->getVal();
-  int numBkg = numEvents - numSignal;
+  *ws->var("xs") = numSignal/(numSignal+numBkg);
+//  int numSignal = numEvents * ws->var("xs")->getVal();
+//  int numBkg = numEvents - numSignal;
 
   ws->factory("Gaussian::dilutionGauss(d,0,0.276)");
   ws->factory("SUM::dSignalPDF(xds[0.109]*dilutionGauss,TruthModel(d))");
@@ -89,11 +93,11 @@ int main (int argc, char **argv)
 
   dataBkg->merge(dBkgData);
   dataBkg->SetName("dataBkg");
-  ws->import(*dataBkg);
+  ws->import(*dataBkg,RooFit::Rename("dataGenBkg"));
 
   dataSignal->append(*dataBkg);
   dataSignal->SetName("data");
-  ws->import(*dataSignal);
+  ws->import(*dataSignal,RooFit::Rename("dataGen"));
 
   //RooFitResult *fit_result = ws->pdf("model")->fitTo(*ws->data("data"), RooFit::Save(kTRUE), RooFit::ConditionalObservables(*ws->var("d")), RooFit::NumCPU(2), RooFit::PrintLevel(3));
 

@@ -417,7 +417,7 @@
                 cout << "IAplusXB = " << IAplusXB << endl;
                 cout << "IAminusXB = " << IAminusXB << endl;
         }
-       if ( t < -1.8 && et < 0.08  ){
+       if ( (t < -1 && et < 0.001) || (t < -2 && et < 0.01) || ( t<-4 && et < 0.1)  ){
           cout << "NaN? (" << t << ',' << et  << ") "  << rho_B << ' ' << rho_Bbar << endl;
           return 0.0;
        }

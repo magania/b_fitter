@@ -44,13 +44,17 @@ int main (int argc, char **argv)
 {
   const char* chInFile = "ws_gen.root";
   const char* chOutFile = "ws_gen_fit.root";
+  int nCPU = 1;
+  bool justBkg = false;
   
   char option_char;
-  while ( (option_char = getopt(argc,argv, "i:o:")) != EOF )
+  while ( (option_char = getopt(argc,argv, "i:o:n:b")) != EOF )
     switch (option_char)
       {  
          case 'i': chInFile = optarg; break;
          case 'o': chOutFile = optarg; break;
+         case 'n': nCPU = atoi(optarg); break;
+         case 'b': justBkg = true; break;
          case '?': fprintf (stderr, 
                             "usage: %s [i<input file> o<output file>]\n", argv[0]);
       }
@@ -63,10 +67,32 @@ int main (int argc, char **argv)
   cout << ws->data("data") << endl;
   TFile outFile(chOutFile,"RECREATE");
 
+
+  RooAbsData *data = ws->data("dataGen");
+  if (!data)
+  {
+     data = ws->data("data");
+     cout << "Using data .. " << endl;
+  }
+
+
+  RooAbsData *dataBkg = ws->data("dataGenBkg");
+  if (!dataBkg)
+  {
+     dataBkg = ws->data("dataBkg");
+     cout << "Using dataBkg .. " << endl;
+  }
+
   /* ************************************* Fit ********************************************** */
 
   cout << "Fitting Sigma(et) from sidebands" << endl;
-  ws->pdf("errorBkg")->fitTo(*ws->data("dataBkg"), RooFit::NumCPU(2));
+
+  ws->var("mm")->setConstant(kFALSE);
+  ws->var("ss")->setConstant(kFALSE);
+  ws->var("bb")->setConstant(kFALSE);
+
+  ws->pdf("errorBkg")->fitTo(*dataBkg, RooFit::NumCPU(nCPU));
+/*
   ws->var("errA")->setConstant(kTRUE);
   ws->var("errB")->setConstant(kTRUE);
   ws->var("errS")->setConstant(kTRUE);
@@ -74,9 +100,35 @@ int main (int argc, char **argv)
   ws->var("errA2")->setConstant(kTRUE);
   ws->var("errB2")->setConstant(kTRUE);
   ws->var("errS2")->setConstant(kTRUE);
+*/
+/*
+  ws->var("meanEt")->setConstant(kTRUE);
+  ws->var("meanEt2")->setConstant(kTRUE);
+  ws->var("sigmaEt")->setConstant(kTRUE);
+  ws->var("sigmaEt2")->setConstant(kTRUE);
+  ws->var("xe")->setConstant(kTRUE);
+*/
+  ws->var("mm")->setConstant(kTRUE);
+  ws->var("ss")->setConstant(kTRUE);
+//  ws->var("aa")->setConstant(kTRUE);
+  ws->var("bb")->setConstant(kTRUE);
 
   cout << "Fitting Background form sidebands" << endl;
-  ws->pdf("background")->fitTo(*ws->data("dataBkg") ,RooFit::NumCPU(2));
+
+  ws->var("tauNeg")->setConstant(kFALSE);
+  ws->var("tauPos")->setConstant(kFALSE);
+  ws->var("tauPosPos")->setConstant(kFALSE);
+  ws->var("xn")->setConstant(kFALSE);
+  ws->var("xp")->setConstant(kFALSE);
+  ws->var("xr")->setConstant(kFALSE);
+  ws->var("scale")->setConstant(kFALSE);
+  ws->var("e02p0")->setConstant(kFALSE);
+  ws->var("e02p2")->setConstant(kFALSE);
+  ws->var("e20p0")->setConstant(kFALSE);
+  ws->var("slope")->setConstant(kFALSE);
+
+  ws->pdf("background")->fitTo(*dataBkg ,RooFit::NumCPU(nCPU));
+
   ws->var("tauNeg")->setConstant(kTRUE);
   ws->var("tauPos")->setConstant(kTRUE);
   ws->var("tauPosPos")->setConstant(kTRUE);
@@ -89,8 +141,10 @@ int main (int argc, char **argv)
   ws->var("e20p0")->setConstant(kTRUE);
   ws->var("slope")->setConstant(kTRUE);
 
+  if (!justBkg)
+  {
   cout << "Fitting signal only" << endl;
-  ws->pdf("model")->fitTo(*ws->data("data"), RooFit::ConditionalObservables(*ws->var("d")) ,RooFit::NumCPU(2));
+  ws->pdf("model")->fitTo(*data, RooFit::ConditionalObservables(*ws->var("d")) ,RooFit::NumCPU(nCPU));
   ws->var("tauNeg")->setConstant(kFALSE);
   ws->var("tauPos")->setConstant(kFALSE);
   ws->var("tauPosPos")->setConstant(kFALSE);
@@ -104,7 +158,8 @@ int main (int argc, char **argv)
   ws->var("slope")->setConstant(kFALSE);
 
   cout << "FullFit" << endl;
-  ws->pdf("model")->fitTo(*ws->data("data"), RooFit::ConditionalObservables(*ws->var("d")) ,RooFit::NumCPU(2));
+  ws->pdf("model")->fitTo(*data, RooFit::ConditionalObservables(*ws->var("d")) ,RooFit::NumCPU(nCPU));
+  }
 
   ws->Write("rws");
   outFile.Close();

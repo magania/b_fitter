@@ -161,16 +161,22 @@ int main (int argc, char **argv)
   ws->import(angle);
 
   /* Sigma(t) */
-  //ws->factory("Landau::errLBkg(et,mean[0.072,0,1],sigma[0.011,0,1])");
-  //ws->factory("Landau::errRBkg(et,mean2[0.08,0,1],sigma2[0.011,0,1])");
+
+// ws->factory("Landau::errBkg(et,meanEt[0.072,0,1],sigmaEt[0.011,0,1])");
+// ws->factory("Landau::err2Bkg(et,meanEt2[0.08,0,1],sigmaEt2[0.011,0,1])");
+
+/*
   ws->factory("{errA[3.8,0.5,10],errB[0.011,0.01,0.2],errS[0.035,0,0.05]}");
   ws->factory("{errA2[2.24,0.5,10],errB2[0.032,0.01,0.2],errS2[0.024,0,0.05]}");
   RooErrPdf errBkg("errBkg", "errBkg", *ws->var("et"), *ws->var("errA"), *ws->var("errB"),*ws->var("errS"));
   RooErrPdf err2Bkg("err2Bkg", "err2Bkg", *ws->var("et"), *ws->var("errA2"), *ws->var("errB2"),*ws->var("errS2"));
   ws->import(errBkg);
   ws->import(err2Bkg);
+*/
 
-  ws->factory("SUM::errorBkg(xe[0.61,0,1]*errBkg,err2Bkg)");
+//  ws->factory("SUM::errorBkg(xe[0.61,0,1]*errBkg,err2Bkg)");
+
+  ws->factory("EXPR::errorBkg('(@0<@3)*TMath::Exp(-0.5*(@0-@1)*(@0-@1)/(@2*@2)) + (@0>=@3)*( TMath::Exp(-(@0-@3)/@4)*TMath::Exp(-0.5*(@3-@1)*(@3-@1)/(@2*@2)) )',{et,mm[0,1],ss[0,1],mm,bb[0,1]})");
 
   /* Full Background PDF */
   ws->factory("PROD::timeBkg(tBkg|et,errorBkg)");

@@ -12,9 +12,9 @@ obj/%.o:src/%.cxx
 
 lib/libBFitter.so: $(HFILES) $(OFILES)
 	rootcint -f dict.cxx -c $(HFILES)
-	g++ $(FLAGS) $(INCLUDE) $(LIBS) -o obj/dict.o -c dict.cxx
+	g++ -fPIC $(FLAGS) $(INCLUDE) $(LIBS) -o obj/dict.o -c dict.cxx
 	rm dict.cxx dict.h
-	g++ $(FLAGS) -shared -o $@ $(INCLUDE) $(LIBS) $(OFILES) 
+	g++ $(FLAGS) -shared -o $@ $(INCLUDE) $(LIBS) $(OFILES) obj/dict.o 
 #	ar rcs lib/libBFitter.a $(OFILES) obj/dict.o
 
 WsBs: bs_work.cpp lib/libBFitter.so

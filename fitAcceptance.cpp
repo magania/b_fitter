@@ -53,7 +53,7 @@ int main() {
 	gSystem->Load("libMathMore");
 	gROOT->SetStyle("Plain");
 
-	TFile acceptance_file("bs.root");
+	TFile acceptance_file("/work/elsanto-clued0/Z/Bs/tmva/bs_flat.root");
 	TTree* acceptance_tree = (TTree*) acceptance_file.Get("tree");
 
 	Double_t cpsi, ctheta, phi;
@@ -79,7 +79,15 @@ int main() {
         TCut QC("(k_minus_nSMT>1 && k_plus_nSMT>1 && mu_minus_nSMT>1 && mu_plus_nSMT>1 && ((mu_minus_nseg==1 && mu_plus_nseg==3) || (mu_minus_nseg==3 && mu_plus_nseg==1) || (mu_minus_nseg==3 && mu_plus_nseg==3)) && TMath::Abs(bs_vrt_z-bs_pv_vrt_z)<5.0)");
         TCut PRL("mu_plus_cpt>1.5 && mu_minus_cpt>1.5 && 2.9 < jpsi_mass  && jpsi_mass < 3.3  && k_plus_cpt>0.7 && k_minus_cpt>0.7 && phi_cpt>1.5 && 1.01 < phi_mass_corrected && phi_mass_corrected<1.03 && bs_pt>6 && bs_vrt_chi2<36 && TMath::Abs(bs_pv_vrt_z - bs_vrt_z) < 5 && k_plus_nSMT>1 && k_minus_nSMT>1 && mu_plus_nSMT>1 && mu_minus_nSMT>1  && k_plus_nSMT+k_plus_nCFT>7 && k_minus_nSMT+k_minus_nCFT>7  && mu_plus_nSMT+mu_plus_nCFT>7 && mu_minus_nSMT+mu_minus_nCFT>7  && (mu_plus_nseg==3||mu_plus_nseg==1) && (mu_minus_nseg==3||mu_minus_nseg==1) && ( jpsi_cpt>4 || (mu_plus_cpt>mu_minus_cpt && TMath::Abs(mu_plus_eta)>=1) || (mu_minus_cpt>mu_plus_cpt && TMath::Abs(mu_minus_eta)>=1) )");
 	TCut cut0("mc_match == 1");
-	TCut cut = PRL + QC + cut0;
+
+        TCut BDT10("inclusiveBDT>0.45 && promptBDT>0.42");
+        TCut BDT12("inclusiveBDT>0.39 && promptBDT>0.35");
+        TCut BDT14("inclusiveBDT>0.33 && promptBDT>0.28");
+        TCut BDT16("inclusiveBDT>0.21 && promptBDT>0.29");
+        TCut BDT18("inclusiveBDT>0.07 && promptBDT>0.29");
+        TCut BDT20("inclusiveBDT>-0.05 && promptBDT>-0.01" );
+
+	TCut cut = BDT18 + QC + cut0;
 
 	acceptance_tree->Draw(">>entry_list", cut, "entrylist");
 	TEntryList *event_list = (TEntryList*)gDirectory->Get("entry_list");
