@@ -111,16 +111,28 @@ TComplex Erf(TComplex z) const;
 TComplex Erf(double x0, double y0) const;
 */
 
+/*                  BDT 20 */
+static const Double_t e_00p0 = 2.45373;
+static const Double_t e_01n1 = 0.00251517;
+static const Double_t e_01p0 = -0.00356385;
+static const Double_t e_01p1 = 0.00343191;
+static const Double_t e_02n2 = 0.000824399;
+static const Double_t e_02n1 = 0.00469868;
+static const Double_t e_02p0 = 0.14931;
+static const Double_t e_02p1 = 0.0175397;
+static const Double_t e_02p2 = -0.262436;
 
-static const Double_t e_00p0 = 2.78142;
-static const Double_t e_01n1 = -0.00650078;
-static const Double_t e_01p0 = 0.00290784;
-static const Double_t e_01p1 = -0.000100291;
-static const Double_t e_02n2 = 0.00157789;
-static const Double_t e_02n1 = -0.00239414;
-static const Double_t e_02p0 = 0.130073;
-static const Double_t e_02p1 = 0.0139719;
-static const Double_t e_02p2 = -0.211069;
+/*                  CUT
+static const Double_t e_00p0 = 2.46581;
+static const Double_t e_01n1 = 0.00835404;
+static const Double_t e_01p0 = -0.00260552;
+static const Double_t e_01p1 = 0.00378741;
+static const Double_t e_02n2 = 0.0133225;
+static const Double_t e_02n1 = 0.00314119;
+static const Double_t e_02p0 = 0.0867515;
+static const Double_t e_02p1 = 0.0162581;
+static const Double_t e_02p2 = -0.154321;
+*/
 
 
 bool _resolution;

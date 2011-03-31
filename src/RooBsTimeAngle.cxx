@@ -422,7 +422,6 @@
           return 0.0;
        }
 
-
         Double_t N = (0.5-0.5*D)*I_rho_B + (0.5+0.5*D)*I_rho_Bbar ;
 
 /*	
@@ -627,8 +626,8 @@ void RooBsTimeAngle::CrossDot(TComplex &CD,
 }
 
 void RooBsTimeAngle::I_mu(TComplex &I_mu, Double_t fs, Double_t delta_s) const {    //8.10
-	I_mu = TMath::Sqrt(fs*(1-fs))*TComplex( TMath::Cos(delta_s)*0.0032835 - TMath::Sin(delta_s)*0.326332, 
-	  	                               -TMath::Cos(delta_s)*0.326332 - TMath::Sin(delta_s)*0.0032835  );
+	I_mu = TMath::Sqrt(fs*(1-fs))*TComplex( TMath::Cos(delta_s)*0.915049 - TMath::Sin(delta_s)*0.0, 
+	  	                               -TMath::Cos(delta_s)*0.0 - TMath::Sin(delta_s)*0.915049  );
 }
 
 Int_t RooBsTimeAngle::getAnalyticalIntegral(RooArgSet& allVars, RooArgSet& analVars, const char* /* rangeName*/) const

@@ -1,5 +1,5 @@
 /*
- *  Author: Ricardo Maga?a-Villalba
+ *  Author: Ricardo Magana-Villalba
  *          magania@fnal.gov
  *
  *  Dec 2010
@@ -45,8 +45,8 @@ int main (int argc, char **argv)
 {
   const char* chInFile = "ws.root";
   const char* chOutFile = "ws_data.root";
-  const char* chRootFile = "PRL.root";
-  const char* chCut = "mu_plus_nseg==3 && mu_minus_nseg==3";
+  const char* chRootFile = "BDT20.root";
+  const char* chCut = "";
 
   char option_char;
   while ( (option_char = getopt(argc,argv, "i:o:r:c:")) != EOF )
@@ -78,7 +78,8 @@ int main (int argc, char **argv)
    RooDataSet* data = new RooDataSet("data","data",allVars);
    RooDataSet* dataBkg = new RooDataSet("dataBkg","dataBkg",allVars);
 
-   TCut* cut = new TCut(chCut);
+   TCut* cut = new TCut("5.17<bs_mass && bs_mass<5.57 && bs_epdl<0.025 && bs_pdl<0.40 && bs_pdl>-0.05 && 1.01<phi_mass && phi_mass<1.03");
+   *cut += chCut;
    tree->Draw(">>entry_list", *cut, "entrylist");
    TEntryList* event_list = (TEntryList*) out_file->Get("entry_list");
 
@@ -103,10 +104,16 @@ int main (int argc, char **argv)
        *rws->var("cpsi")=dCpsi;
        *rws->var("ctheta")=dCtheta;
        *rws->var("phi")=dPhi;
-       *rws->var("d")=ddDefined==1?dd:0.0;
+
+       *rws->var("d")=0;
+       ////rws->cat("dilution")->setIndex(0);
+       if ( ddDefined==1 ){
+    	   ////rws->cat("dilution")->setIndex(1);
+    	   *rws->var("d")=dd;
+       }
 
        data->add(allVars);
-       if (dM<5.2 || dM>5.6)
+       if (dM<5.29 || dM>5.44)
            dataBkg->add(allVars);
    }
 
@@ -116,4 +123,6 @@ int main (int argc, char **argv)
    out_file->Close();
    in_file->Close();
    tree_file->Close();
+
+   cout << endl << "Done." << endl;
 }

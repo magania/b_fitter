@@ -87,7 +87,7 @@ int main() {
         TCut BDT18("inclusiveBDT>0.07 && promptBDT>0.29");
         TCut BDT20("inclusiveBDT>-0.05 && promptBDT>-0.01" );
 
-	TCut cut = BDT18 + QC + cut0;
+	TCut cut = PRL + QC + cut0;
 
 	acceptance_tree->Draw(">>entry_list", cut, "entrylist");
 	TEntryList *event_list = (TEntryList*)gDirectory->Get("entry_list");
@@ -107,7 +107,7 @@ int main() {
                 if (weight < 0)
 		  weight = 0;
 
-		acceptance_histo->Fill(ctheta,phi);
+		acceptance_histo->Fill(ctheta,phi,weight);
 //		std::cout << ctheta << ' ' << phi<< ' ' << weight << std::endl;
 //		std::cout << muPlusPt << ' ' << muMinusPt << ' ' << muPlusEta << ' ' << muMinusEta << ' ' << weight << std::endl;
 	}

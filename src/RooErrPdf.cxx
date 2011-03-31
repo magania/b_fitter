@@ -72,6 +72,7 @@ Double_t RooErrPdf::analyticalIntegral(Int_t code, const char* rangeName) const
 */
 
 //  std::cout << xmax << " " << TMath::Power(b,a+1)*TMath::Gamma(a+1,xmax/b)*TMath::Gamma(a+1) << std::endl;
-  return TMath::Power(b,a+1)*TMath::Gamma(a+1,xmax/b)*TMath::Gamma(a+1);
+//  return TMath::Power(b,a+1)*TMath::Gamma(a+1,xmax/b)*TMath::Gamma(a+1);
+  return TMath::Power(b,a+1)*TMath::Gamma(a+1);
 }
 

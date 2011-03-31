@@ -64,11 +64,11 @@ int main (int argc, char **argv)
   cout << "Signal Events = " << numSignal << endl;
   cout << "Bkg Events = " << numBkg << endl;
 
-  TFile inFile(chInFile);
+  TFile inFile(chInFile,"READ");
   RooWorkspace* ws = (RooWorkspace*) inFile.Get("rws");
   TFile outFile(chOutFile,"RECREATE");
 
-  *ws->var("xs") = numSignal/(numSignal+numBkg);
+  //*ws->var("xs") = numSignal/(numSignal+numBkg);
 //  int numSignal = numEvents * ws->var("xs")->getVal();
 //  int numBkg = numEvents - numSignal;
 
@@ -76,28 +76,49 @@ int main (int argc, char **argv)
   ws->factory("SUM::dSignalPDF(xds[0.109]*dilutionGauss,TruthModel(d))");
   ws->factory("SUM::dBkgPDF(xdb[0.109]*dilutionGauss,TruthModel(d))");
 
+  ws->factory("GaussModel::xetGaussianS(et,meanGaussEtS,sigmaGaussEtS)");
+  ws->factory("Decay::xerrorSignal(et,tauEtS,xetGaussianS,SingleSided]");
+
+  ws->factory("PROD::xsignalTimeAngle(timeAngle|et,xerrorSignal");
+  ws->factory("PROD::xsignal(massSignal,xsignalTimeAngle,DmConstraint)");
+
   RooDataSet* dSignalData = ws->pdf("dSignalPDF")->generate(RooArgSet(*ws->var("d")),numSignal);
-  RooDataSet *dataSignal = ws->pdf("signal")->generate(RooArgSet(*ws->var("m"),*ws->var("t"),*ws->var("et"),*ws->var("cpsi"),*ws->var("ctheta"),*ws->var("phi")), RooFit::ProtoData(*dSignalData));
- 
-  ws->factory("Decay::negativeDecay2(t,tauNeg,resolution,Flipped)");
-  ws->factory("Decay::positiveDecay2(t,tauPos,resolution,SingleSided)");
-  ws->factory("Decay::positiveLongDecay2(t,tauPosPos,resolution,SingleSided)");
+  RooDataSet *dataSignal = ws->pdf("xsignal")->generate(RooArgSet(*ws->var("m"),*ws->var("t"),*ws->var("et"),*ws->var("cpsi"),*ws->var("ctheta"),*ws->var("phi")), RooFit::ProtoData(*dSignalData));
 
-  ws->factory("RSUM::tBkg2(xr*resolution,xn*negativeDecay2,xp*positiveDecay2,positiveLongDecay2");
+  ws->factory("Decay::xnegativeDecay(t,tauNeg,resolution,Flipped)");
+  ws->factory("Decay::xpositiveDecay(t,tauPos,resolution,SingleSided)");
+  ws->factory("Decay::xpositiveLongDecay(t,tauLngPos,resolution,SingleSided)");
+  ws->factory("Decay::xpositiveLongLongDecay(t,tauLngLngPos,resolution,SingleSided)");
 
-  ws->factory("PROD::timeBkg2(tBkg2|et,errorBkg)");
-  ws->factory("PROD::background2(massBkg,timeBkg2,angle,dBkgPDF)");
+  ws->factory("RSUM::xtBkgNP(xn*xnegativeDecay,xp*xpositiveDecay,xpp*xpositiveLongDecay,xpositiveLongLongDecay");
+
+  ws->factory("GaussModel::xetGaussianPR(et,meanGaussEtPR,sigmaGaussEtPR)");
+  ws->factory("Decay::xerrBkgPR(et,tauEtPR,xetGaussianPR,SingleSided]");
+  ws->factory("GaussModel::xetGaussianNP(et,meanGaussEtNP,sigmaGaussEtNP)");
+  ws->factory("Decay::xerrBkgNP(et,tauEtNP,xetGaussianNP,SingleSided]");
+
+   ws->factory("PROD::xtimeBkgNP(xtBkgNP|et,xerrBkgNP)");
+   ws->factory("PROD::xtimeBkgPR(resolution|et,xerrBkgPR)");
+
+   ws->factory("PROD::xPrompt(massBkgPR,xtimeBkgPR,anglePR)");
+   ws->factory("PROD::xNonPrompt(massBkgNP,xtimeBkgNP,angleNP)");
+
+  ws->factory("SUM::xbackground(xprompt*xPrompt,xNonPrompt)");
 
   RooDataSet* dBkgData = ws->pdf("dBkgPDF")->generate(RooArgSet(*ws->var("d")),numBkg);
-  RooDataSet* dataBkg = ws->pdf("background2")->generate(RooArgSet(*ws->var("m"),*ws->var("t"),*ws->var("et"),*ws->var("cpsi"),*ws->var("ctheta"),*ws->var("phi")), numBkg);
+  RooDataSet* dataBkg = ws->pdf("xbackground")->generate(RooArgSet(*ws->var("m"),*ws->var("t"),*ws->var("et"),*ws->var("cpsi"),*ws->var("ctheta"),*ws->var("phi")), numBkg);
 
   dataBkg->merge(dBkgData);
-  dataBkg->SetName("dataBkg");
-  ws->import(*dataBkg,RooFit::Rename("dataGenBkg"));
+  dataSignal->SetName("dataGenSignal");
+  dataBkg->SetName("dataGenBkg");
+  ws->import(*dataSignal);
+  ws->import(*dataBkg);
+
+  ////ws->import(*dataBkg,RooFit::Rename("dataGenBkg"));
 
   dataSignal->append(*dataBkg);
-  dataSignal->SetName("data");
-  ws->import(*dataSignal,RooFit::Rename("dataGen"));
+  dataSignal->SetName("dataGen");
+  ws->import(*dataSignal);
 
   //RooFitResult *fit_result = ws->pdf("model")->fitTo(*ws->data("data"), RooFit::Save(kTRUE), RooFit::ConditionalObservables(*ws->var("d")), RooFit::NumCPU(2), RooFit::PrintLevel(3));
 
