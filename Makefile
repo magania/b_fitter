@@ -1,11 +1,13 @@
+EFF=EFFCUT
+
 INCLUDE = -Iinclude -I`root-config --incdir`
-LIBS = `root-config --libs`  -l RooFit -lMathMore
-FLAGS = -g
+LIBS = `root-config --libs`  -l RooFit -lMathMore -lRooStats
+FLAGS = -O3 -D$(EFF)
 
 HFILES = include/RooBsTimeAngle.h include/RooAngle.h include/RooErrPdf.h
 OFILES =     obj/RooBsTimeAngle.o    obj/RooAngle.o      obj/RooErrPdf.o
 
-all: WsBs GenBs DataBs FitBs FitAcceptance
+all: WsBs GenBs DataBs FitBs ScanBs FitAcceptance
 
 obj/%.o:src/%.cxx
 	g++ -fPIC $(FLAGS) $(INCLUDE) $(LIBS) -o $@ -c $<
@@ -25,11 +27,13 @@ DataBs: bs_data.cpp lib/libBFitter.so
 	g++ $(FLAGS) -o $@ $(INCLUDE) $(LIBS) $(OFILES) obj/dict.o $<
 FitBs: bs_fit.cpp lib/libBFitter.so
 	g++ $(FLAGS) -o $@ $(INCLUDE) $(LIBS) $(OFILES) obj/dict.o $<
+ScanBs: bs_scan.cpp lib/libBFitter.so
+	g++ $(FLAGS) -o $@ $(INCLUDE) $(LIBS) $(OFILES) obj/dict.o $<
 FitAcceptance: fitAcceptance.cpp lib/libBFitter.so
 	g++ $(FLAGS) -o $@ $(INCLUDE) $(LIBS) $(OFILES) obj/dict.o $<
 
 clean:
-	rm -v obj/*.o lib/lib* WsBs GenBs DataBs FitBs
+	rm -v obj/*.o lib/lib* WsBs GenBs DataBs FitBs FitAcceptance ScanBs
 
 #%: %.cpp lib/libBFitter.so
 #	g++ $(FLAGS) -o $@ $(INCLUDE) $(LIBS) $(OFILES) obj/dict.o $<

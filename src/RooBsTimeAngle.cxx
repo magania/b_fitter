@@ -626,12 +626,15 @@ void RooBsTimeAngle::CrossDot(TComplex &CD,
 }
 
 void RooBsTimeAngle::I_mu(TComplex &I_mu, Double_t fs, Double_t delta_s) const {    //8.10
-	I_mu = TMath::Sqrt(fs*(1-fs))*TComplex( TMath::Cos(delta_s)*0.0032835 - TMath::Sin(delta_s)*0.3263320, 
-	  	                               -TMath::Cos(delta_s)*0.3263320 - TMath::Sin(delta_s)*0.0032835  );
+        I_mu = TMath::Sqrt(fs*(1-fs))*TComplex( TMath::Cos(delta_s)*0.0330435 - TMath::Sin(delta_s)*0.5624834,
+                                               -TMath::Cos(delta_s)*0.5624834 - TMath::Sin(delta_s)*0.0330435  );
 }
 
 Int_t RooBsTimeAngle::getAnalyticalIntegral(RooArgSet& allVars, RooArgSet& analVars, const char* /* rangeName*/) const
 {
+  cout << "INTEGRAL **********************" << endl;
+  allVars.Print();
+  cout << matchArgs(allVars, analVars, t, cpsi, ctheta, phi) << endl;
   if (matchArgs(allVars, analVars, t, cpsi, ctheta, phi)) return 1;
 /*  if (matchArgs(allVars, analVars, cpsi, ctheta, phi)) return 2;
   if (matchArgs(allVars, analVars,       ctheta, phi)) return 3;

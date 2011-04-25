@@ -78,7 +78,7 @@ int main (int argc, char **argv)
    RooDataSet* data = new RooDataSet("data","data",allVars);
    RooDataSet* dataBkg = new RooDataSet("dataBkg","dataBkg",allVars);
 
-   TCut* cut = new TCut("5.17<bs_mass && bs_mass<5.57 && bs_epdl<0.025 && bs_pdl<0.40 && bs_pdl>-0.05 && 1.01<phi_mass && phi_mass<1.03");
+   TCut* cut = new TCut("5.17<bs_mass && bs_mass<5.57 && bs_epdl<0.02 && bs_pdl<0.40 && bs_pdl>-0.15 && 1.01<phi_mass && phi_mass<1.03");
    *cut += chCut;
    tree->Draw(">>entry_list", *cut, "entrylist");
    TEntryList* event_list = (TEntryList*) out_file->Get("entry_list");

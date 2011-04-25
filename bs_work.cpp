@@ -80,8 +80,10 @@ int main (int argc, char **argv)
   ////ws->import(dilution);
 
   ws->factory("{DZero[0],D10to20[0.102],D20to35[0.184],D35to45[0.325],D45to60[0.486],D60to100[0.543]}");
-  ws->factory("{DG[0.09,0,1],Dm[17.77,17.4,18.2],tau[1.5,1.0,2.0],beta[0.0],delta_l[-2.93,-6.28,6.28],delta_p[2.93,-6.28,6.28],delta_s[0.0,-6.28,6.128],fs[0.1,0,1],scale[1.0,0.5,1.5]}");
-  ws->factory("Gaussian::DmConstraint(Dm,17.77,0.17");
+  ws->factory("{DG[0.09,0,1],Dm[17.77,17.41,18.13],tau[1.5,1.0,2.0],beta[0.0,-INF,INF],delta_l[-2.96,-6,3],delta_p[2.97,0,6],delta_s[0.0,-6.28,6.128],fs[0.1,0,1],scale[1.0,0.5,1.5]}");
+////  ws->factory("{DG[0.09,0,1],Dm[17.77,17.41,18.13],tau[1.5,1.0,2.0],beta[0.0,-INF,INF],delta_l[-2.96,-6,3],delta_p[2.97,0,6],delta_s[0],fs[0],scale[1.0,0.5,1.5]}");
+////  ws->factory("{DG[0.09,0,1],Dm[17.77,17.41,18.13],tau[1.5,1.0,2.0],beta[0.0],delta_l[-2.96,-6,3],delta_p[2.97,0,6],delta_s[0],fs[0],scale[1.0,0.5,1.5]}");
+  ws->factory("Gaussian::DmConstraint(Dm,17.77,0.12");
 
   ws->factory("{A02[0.6,0,1],A1[0.75,0,1]}");
 //  ws->factory("{A02[0.6,0,1],Al2[0.3,0,1]}");
@@ -112,10 +114,24 @@ int main (int argc, char **argv)
   ws->import(timeAngle);
 
   /* Sigma(t) */
-  ws->factory("GaussModel::etGaussianS(et,meanGaussEtS[0.0614,0,0.2],sigmaGaussEtS[0.0116,0,0.2])");
-  ws->factory("Decay::errorSignal(et,tauEtS[0.0481,0,0.2],etGaussianS,SingleSided]");
+//  ws->factory("GaussModel::etGaussianS(et,meanGaussEtS[0.0614,0,0.2],sigmaGaussEtS[0.0116,0,0.2])");
+//  ws->factory("Decay::errorSignal(et,tauEtS[0.0481,0,0.2],etGaussianS,SingleSided]");
 
 ////  ws->factory("Landau::errorSignal(et,meanErrSignal[0.0741194,0,1],sigmaErrSignal[0.0175981,0,1])");
+
+#ifdef EFFBDT20
+//BDT
+ws->factory("RSUM::errorSignal(x1[0.330954]*Gaussian::g1(et,m1[0.0712217],s1[0.0148496]),x2[0.550785]*Gaussian::g2(et,m2[0.101322],s2[0.0227363]),x3[0.0667897]*Gaussian::g3(et,m3[0.20006],s3[0.0767951]),x4[0.615575]*Gaussian::g4(et,m4[0.142648],s4[0.0366608]),Gaussian::g5(et,m5[0.0488805],s5[0.00966675]))");
+#endif
+
+#ifdef EFFBDT10
+ws->factory("RSUM::errorSignal(x1[0.368394]*Gaussian::g1(et,m1[0.0672495],s1[0.0137395]),x2[0.175757]*Gaussian::g2(et,m2[0.0464849],s2[0.00877149]),x3[0.704165]*Gaussian::g3(et,m3[0.0937945],s3[0.0203524]),x4[0.899823]*Gaussian::g4(et,m4[0.131219],s4[0.0318666]),Gaussian::g5(et,m5[0.194128],s5[0.0663018]))");
+#endif
+
+#ifdef EFFCUT
+//CUT
+ws->factory("RSUM::errorSignal(x1[0.0164413]*Gaussian::g1(et,m1[0.194133],s1[0.0754175]),x2[0.371492]*Gaussian::g2(et,m2[0.0968759],s2[0.0212262]),x3[0.185101]*Gaussian::g3(et,m3[0.0477364],s3[0.00920869]),x4[0.705251]*Gaussian::g4(et,m4[0.068875],s4[0.0141091]),Gaussian::g5(et,m5[0.135975],s5[0.033775]))");
+#endif
 
   /* Full Signal PDF */
   ws->factory("PROD::signalTimeAngle(timeAngle|et,errorSignal");
@@ -124,8 +140,8 @@ int main (int argc, char **argv)
 
   /* ************************************* Background ********************************************** */
   /* Mass */
-  ws->factory("Polynomial::massBkgNP(m,{slopeNP[-0.1238,-0.1795,1]})");
-  ws->factory("Polynomial::massBkgPR(m,{slopePR[-0.1283,-0.1795,1]})");
+  ws->factory("Polynomial::massBkgNP(m,{slopeNP[-0.1238,-0.1795,2],squareNP[-1,1]})");
+  ws->factory("Polynomial::massBkgPR(m,{slopePR[-0.1283,-0.1795,2]})");
 
   /* Time */
   ws->factory("GaussModel::resolution(t,0,scale,et)");
@@ -137,11 +153,12 @@ int main (int argc, char **argv)
   ws->factory("Decay::positiveLongDecay(t,tauLngPos[0.761,0.1,3],resolution,SingleSided)");
   ws->factory("Decay::positiveLongLongDecay(t,tauLngLngPos[0.761,0.1,5],resolution,SingleSided)");
 
-  ws->factory("RSUM::tBkgNP(xn[0.0488,0,1]*negativeDecay,xp[0.767,0,1]*positiveDecay,xpp[0.1,0,1]*positiveLongDecay,positiveLongLongDecay");
+//  ws->factory("RSUM::tBkgNP(xn[0.0488,0,1]*negativeDecay,xp[0.767,0,1]*positiveDecay,xpp[0.1,0,1]*positiveLongDecay,positiveLongLongDecay");
+  ws->factory("RSUM::tBkgNP(xn[0.0488,0,1]*negativeDecay,xp[0.767,0,1]*positiveDecay,positiveLongDecay");
 
   /* Angle */
-  ws->factory("{pre01m1[0],pre01p0[0],pre01p1[0.006,-1,1],pre02m2[0.0003,-1,1],pre02m1[0],pre02p0[0.120,-1,1],pre02p1[0.003,-1,1],pre02p2[-0.200,-1,1]}");
-  ws->factory("{pre20p0[0.057,-1,1],pre21m1[0],pre21p0[0],pre21p1[0],pre22m2[0],pre22m1[0],pre22p0[0],pre22p1[0],pre22p2[-0.013,-1,1]}");
+  ws->factory("{pre01m1[-1,1],pre01p0[-1,1],pre01p1[-1,1],pre02m2[-1,1],pre02m1[-1,1],pre02p0[-1,1],pre02p1[-1,1],pre02p2[-1,1]}");
+  ws->factory("{pre20p0[-1,1],pre21m1[-1,1],pre21p0[-1,1],pre21p1[-1,1],pre22m2[-1,1],pre22m1[-1,1],pre22p0[-1,1],pre22p1[-1,1],pre22p2[-1,1]}");
 
   RooAngle anglePR("anglePR","anglePR", *ws->var("cpsi"), *ws->var("ctheta"), *ws->var("phi"),
 	               *ws->var("pre01m1"),
@@ -163,8 +180,8 @@ int main (int argc, char **argv)
 	               *ws->var("pre22p2")
 		       );
 
-  ws->factory("{npe01m1[0],npe01p0[0],npe01p1[0],npe02m2[0],npe02m1[-0.006,-1,1],npe02p0[0.066,-1,1],npe02p1[0],npe02p2[-0.139,-1,1]}");
-  ws->factory("{npe20p0[0],npe21m1[0],npe21p0[0],npe21p1[0],npe22m2[0],npe22m1[0],npe22p0[0],npe22p1[0.031,-1,1],npe22p2[0]}");
+  ws->factory("{npe01m1[-1,1],npe01p0[-1,1],npe01p1[-1,1],npe02m2[-1,1],npe02m1[-1,1],npe02p0[-1,1],npe02p1[-1,1],npe02p2[-1,1]}");
+  ws->factory("{npe20p0[-1,1],npe21m1[-1,1],npe21p0[-1,1],npe21p1[-1,1],npe22m2[-1,1],npe22m1[-1,1],npe22p0[-1,1],npe22p1[-1,1],npe22p2[-1,1]}");
 
   RooAngle angleNP("angleNP","angleNP", *ws->var("cpsi"), *ws->var("ctheta"), *ws->var("phi"),
 	               *ws->var("npe01m1"),
@@ -188,6 +205,164 @@ int main (int argc, char **argv)
 
   ws->import(anglePR);
   ws->import(angleNP);
+
+#ifdef EFFBDT20
+/* One Sigma
+ws->var("npe01p0")->setConstant(kTRUE); //4
+ws->var("npe01p1")->setConstant(kTRUE); //5
+ws->var("npe02m1")->setConstant(kTRUE); //6
+ws->var("npe02m2")->setConstant(kTRUE); //7
+ws->var("npe02p1")->setConstant(kTRUE); //9
+ws->var("npe21p1")->setConstant(kTRUE); //14
+ws->var("npe22m1")->setConstant(kTRUE); //15
+ws->var("npe22m2")->setConstant(kTRUE); //16
+ws->var("npe22p0")->setConstant(kTRUE); //17
+ws->var("pre01m1")->setConstant(kTRUE); //20
+ws->var("pre01p0")->setConstant(kTRUE); //21
+ws->var("pre02m1")->setConstant(kTRUE); //23
+ws->var("pre02m2")->setConstant(kTRUE); //24
+ws->var("pre21p1")->setConstant(kTRUE); //31
+ws->var("pre22m2")->setConstant(kTRUE); //33
+ws->var("pre22p1")->setConstant(kTRUE); //35
+*/
+
+/// Two Sigma
+ws->var("npe01p0")->setConstant(kTRUE); //4
+ws->var("npe01p1")->setConstant(kTRUE); //5
+ws->var("npe02m1")->setConstant(kTRUE); //6
+ws->var("npe02m2")->setConstant(kTRUE); //7
+ws->var("npe02p1")->setConstant(kTRUE); //9
+ws->var("npe21m1")->setConstant(kTRUE); //12
+ws->var("npe21p0")->setConstant(kTRUE); //13
+ws->var("npe21p1")->setConstant(kTRUE); //14
+ws->var("npe22m1")->setConstant(kTRUE); //15
+ws->var("npe22m2")->setConstant(kTRUE); //16
+ws->var("npe22p0")->setConstant(kTRUE); //17
+ws->var("npe22p1")->setConstant(kTRUE); //18
+ws->var("pre01m1")->setConstant(kTRUE); //20
+ws->var("pre01p0")->setConstant(kTRUE); //21
+ws->var("pre01p1")->setConstant(kTRUE); //22
+ws->var("pre02m1")->setConstant(kTRUE); //23
+ws->var("pre02m2")->setConstant(kTRUE); //24
+ws->var("pre02p1")->setConstant(kTRUE); //26
+ws->var("pre21p0")->setConstant(kTRUE); //30
+ws->var("pre21p1")->setConstant(kTRUE); //31
+ws->var("pre22m1")->setConstant(kTRUE); //32
+ws->var("pre22m2")->setConstant(kTRUE); //33
+ws->var("pre22p0")->setConstant(kTRUE); //34
+ws->var("pre22p1")->setConstant(kTRUE); //35
+ws->var("pre22p2")->setConstant(kTRUE); //36
+#endif
+
+#ifdef EFFBDT10
+/* One Sigma
+ws->var("npe01p0")->setConstant(kTRUE); //4
+ws->var("npe01p1")->setConstant(kTRUE); //5
+ws->var("npe02m1")->setConstant(kTRUE); //6
+ws->var("npe02p0")->setConstant(kTRUE); //8
+ws->var("npe02p1")->setConstant(kTRUE); //9
+ws->var("npe02p2")->setConstant(kTRUE); //10
+ws->var("npe20p0")->setConstant(kTRUE); //11
+ws->var("npe21m1")->setConstant(kTRUE); //12
+ws->var("npe21p0")->setConstant(kTRUE); //13
+ws->var("npe22m2")->setConstant(kTRUE); //16
+ws->var("npe22p1")->setConstant(kTRUE); //18
+ws->var("pre01m1")->setConstant(kTRUE); //20
+ws->var("pre01p0")->setConstant(kTRUE); //21
+ws->var("pre02m1")->setConstant(kTRUE); //23
+ws->var("pre02m2")->setConstant(kTRUE); //24
+ws->var("pre02p1")->setConstant(kTRUE); //26
+ws->var("pre21m1")->setConstant(kTRUE); //29
+ws->var("pre21p0")->setConstant(kTRUE); //30
+ws->var("pre22m1")->setConstant(kTRUE); //32
+ws->var("pre22p1")->setConstant(kTRUE); //35
+*/
+
+/// Two Sigma
+ws->var("npe01m1")->setConstant(kTRUE); //3
+ws->var("npe01p0")->setConstant(kTRUE); //4
+ws->var("npe01p1")->setConstant(kTRUE); //5
+ws->var("npe02m1")->setConstant(kTRUE); //6
+ws->var("npe02p0")->setConstant(kTRUE); //8
+ws->var("npe02p1")->setConstant(kTRUE); //9
+ws->var("npe02p2")->setConstant(kTRUE); //10
+ws->var("npe20p0")->setConstant(kTRUE); //11
+ws->var("npe21m1")->setConstant(kTRUE); //12
+ws->var("npe21p0")->setConstant(kTRUE); //13
+ws->var("npe21p1")->setConstant(kTRUE); //14
+ws->var("npe22m1")->setConstant(kTRUE); //15
+ws->var("npe22m2")->setConstant(kTRUE); //16
+ws->var("npe22p0")->setConstant(kTRUE); //17
+ws->var("npe22p1")->setConstant(kTRUE); //18
+ws->var("npe22p2")->setConstant(kTRUE); //19
+ws->var("pre01m1")->setConstant(kTRUE); //20
+ws->var("pre01p0")->setConstant(kTRUE); //21
+ws->var("pre02m1")->setConstant(kTRUE); //23
+ws->var("pre02m2")->setConstant(kTRUE); //24
+ws->var("pre02p1")->setConstant(kTRUE); //26
+ws->var("pre20p0")->setConstant(kTRUE); //28
+ws->var("pre21m1")->setConstant(kTRUE); //29
+ws->var("pre21p0")->setConstant(kTRUE); //30
+ws->var("pre21p1")->setConstant(kTRUE); //31
+ws->var("pre22m1")->setConstant(kTRUE); //32
+ws->var("pre22m2")->setConstant(kTRUE); //33
+ws->var("pre22p0")->setConstant(kTRUE); //34
+ws->var("pre22p1")->setConstant(kTRUE); //35
+ws->var("pre22p2")->setConstant(kTRUE); //36
+#endif
+
+
+#ifdef EFFCUT
+/* One Sigma
+ws->var("npe01p0")->setConstant(kTRUE); //4
+ws->var("npe01p1")->setConstant(kTRUE); //5
+ws->var("npe02m1")->setConstant(kTRUE); //6
+ws->var("npe02m2")->setConstant(kTRUE); //7
+ws->var("npe02p1")->setConstant(kTRUE); //9
+ws->var("npe21p0")->setConstant(kTRUE); //13
+ws->var("npe21p1")->setConstant(kTRUE); //14
+ws->var("npe22m1")->setConstant(kTRUE); //15
+ws->var("npe22m2")->setConstant(kTRUE); //16
+ws->var("npe22p1")->setConstant(kTRUE); //18
+ws->var("pre01p1")->setConstant(kTRUE); //22
+ws->var("pre02m2")->setConstant(kTRUE); //24
+ws->var("pre02p1")->setConstant(kTRUE); //26
+ws->var("pre21m1")->setConstant(kTRUE); //29
+ws->var("pre21p0")->setConstant(kTRUE); //30
+ws->var("pre22m2")->setConstant(kTRUE); //33
+ws->var("pre22p0")->setConstant(kTRUE); //34
+ws->var("pre22p2")->setConstant(kTRUE); //36
+*/
+
+// Two Sigma
+ws->var("npe01m1")->setConstant(kTRUE); //3
+ws->var("npe01p0")->setConstant(kTRUE); //4
+ws->var("npe01p1")->setConstant(kTRUE); //5
+ws->var("npe02m1")->setConstant(kTRUE); //6
+ws->var("npe02m2")->setConstant(kTRUE); //7
+ws->var("npe02p1")->setConstant(kTRUE); //9
+ws->var("npe21m1")->setConstant(kTRUE); //12
+ws->var("npe21p0")->setConstant(kTRUE); //13
+ws->var("npe21p1")->setConstant(kTRUE); //14
+ws->var("npe22m1")->setConstant(kTRUE); //15
+ws->var("npe22m2")->setConstant(kTRUE); //16
+ws->var("npe22p0")->setConstant(kTRUE); //17
+ws->var("npe22p1")->setConstant(kTRUE); //18
+ws->var("npe22p2")->setConstant(kTRUE); //19
+ws->var("pre01p0")->setConstant(kTRUE); //21
+ws->var("pre01p1")->setConstant(kTRUE); //22
+ws->var("pre02m1")->setConstant(kTRUE); //23
+ws->var("pre02m2")->setConstant(kTRUE); //24
+ws->var("pre02p1")->setConstant(kTRUE); //26
+ws->var("pre20p0")->setConstant(kTRUE); //28
+ws->var("pre21m1")->setConstant(kTRUE); //29
+ws->var("pre21p0")->setConstant(kTRUE); //30
+ws->var("pre21p1")->setConstant(kTRUE); //31
+ws->var("pre22m2")->setConstant(kTRUE); //33
+ws->var("pre22p0")->setConstant(kTRUE); //34
+ws->var("pre22p1")->setConstant(kTRUE); //35
+ws->var("pre22p2")->setConstant(kTRUE); //36
+#endif
 
   /* Sigma(t) */
 //  ws->factory("Landau::errBkgPR(et,meanEtPR[0.07,0,1],sigmaEtPR[0.011,0,1])");

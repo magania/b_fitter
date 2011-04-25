@@ -28,38 +28,15 @@
 //#include "Fit/FitConfig.h"
 
 
-Double_t HarmonicSphericalY(int l, int m, Double_t _ctheta, Double_t _phi) {
-        if (m==0)
-                return TMath::Sqrt( ((2.0*l+1)*TMath::Gamma(l+1))/(4.0*TMath::Pi()*TMath::Gamma(l+1)) )*ROOT::Math::assoc_legendre(l,0,_ctheta);
-        if (m>0)
-                return TMath::Sqrt( ((2.0*l+1)*TMath::Gamma(l-m+1))/(2.0*TMath::Pi()*TMath::Gamma(l+m+1)) )*ROOT::Math::assoc_legendre(l,m,_ctheta)*TMath::Cos(m*_phi)*TMath::Power(-1.0,m);
-        if (m<0)
-                return TMath::Sqrt( ((2.0*l+1)*TMath::Gamma(l+m+1))/(2.0*TMath::Pi()*TMath::Gamma(l-m+1)) )*ROOT::Math::assoc_legendre(l,-m,_ctheta)*TMath::Sin(-m*_phi)*TMath::Power(-1.0,-m);
-}
-
-// Sum of background and peak function
-Double_t fitFunction(Double_t *x, Double_t *par) {
-	Double_t result=0;
-
-	int n_par=0;
-	for(int l=0; l<=2; l++)
-		for ( int m=-l; m<=l; m++)
-			result += par[n_par++]*HarmonicSphericalY(l,m,x[0],x[1]);
-
-	return result;
-}
-
-int main() {
+int fitEt() {
 	gSystem->Load("libMathMore");
 	gROOT->SetStyle("Plain");
 
 	TFile acceptance_file("/work/elsanto-clued0/Z/Bs/tmva/bs_flat.root");
 	TTree* acceptance_tree = (TTree*) acceptance_file.Get("tree");
 
-	Double_t cpsi, ctheta, phi;
-	acceptance_tree->SetBranchAddress("bs_angle_cpsi", &cpsi);
-	acceptance_tree->SetBranchAddress("bs_angle_ctheta", &ctheta);
-	acceptance_tree->SetBranchAddress("bs_angle_phi", &phi);
+	Double_t epdl;
+	acceptance_tree->SetBranchAddress("bs_epdl", &epdl);
 
         Double_t muPlusPt, muMinusPt, jpsiPt, muPlusEta, muMinusEta;
 	acceptance_tree->SetBranchAddress("mu_plus_pt", &muPlusPt);
@@ -74,7 +51,9 @@ int main() {
         TF1 *weightFcnForward = new TF1("weightFcnCentral","landau(0)+pol1(3)",3.02,45);
         weightFcnForward->SetParameters(8.93988e+00,1.16932e+01,3.94829e+00,-3.07532e-01,2.27729e-02);
 
-	TH2D* acceptance_histo = new TH2D("acceptance_histo", "acceptance", 20, -1.0, 1.0, 20, -TMath::Pi(), TMath::Pi());
+	TH1D* et_histo = new TH1D("et_histo", "sigma(et)", 100, 0, 0.02 );
+	RooRealVar et("et","et",0,0.4);
+	RooDataSet dataSet("dataSet","dataSet",et);
 
         TCut QC("(k_minus_nSMT>1 && k_plus_nSMT>1 && mu_minus_nSMT>1 && mu_plus_nSMT>1 && ((mu_minus_nseg==1 && mu_plus_nseg==3) || (mu_minus_nseg==3 && mu_plus_nseg==1) || (mu_minus_nseg==3 && mu_plus_nseg==3)) && TMath::Abs(bs_vrt_z-bs_pv_vrt_z)<5.0)");
         TCut PRL("mu_plus_cpt>1.5 && mu_minus_cpt>1.5 && 2.9 < jpsi_mass  && jpsi_mass < 3.3  && k_plus_cpt>0.7 && k_minus_cpt>0.7 && phi_cpt>1.5 && 1.01 < phi_mass_corrected && phi_mass_corrected<1.03 && bs_pt>6 && bs_vrt_chi2<36 && TMath::Abs(bs_pv_vrt_z - bs_vrt_z) < 5 && k_plus_nSMT>1 && k_minus_nSMT>1 && mu_plus_nSMT>1 && mu_minus_nSMT>1  && k_plus_nSMT+k_plus_nCFT>7 && k_minus_nSMT+k_minus_nCFT>7  && mu_plus_nSMT+mu_plus_nCFT>7 && mu_minus_nSMT+mu_minus_nCFT>7  && (mu_plus_nseg==3||mu_plus_nseg==1) && (mu_minus_nseg==3||mu_minus_nseg==1) && ( jpsi_cpt>4 || (mu_plus_cpt>mu_minus_cpt && TMath::Abs(mu_plus_eta)>=1) || (mu_minus_cpt>mu_plus_cpt && TMath::Abs(mu_minus_eta)>=1) )");
@@ -108,13 +87,48 @@ int main() {
                 if (weight < 0)
 		  weight = 0;
 
-		acceptance_histo->Fill(ctheta,phi,weight);
-//		std::cout << ctheta << ' ' << phi<< ' ' << weight << std::endl;
+		et_histo->Fill(epdl,weight);
+		et = epdl/0.0299792458;
+		dataSet.add(et,weight);
+//		std::cout << epdl <<  weight << std::endl;
 //		std::cout << muPlusPt << ' ' << muMinusPt << ' ' << muPlusEta << ' ' << muMinusEta << ' ' << weight << std::endl;
 	}
 
-//	acceptance_histo->Draw();
+	RooWorkspace rws;
+	rws.import(et);
+//	rws.import(dataSet);
 
+//  rws.factory("GaussModel::etGaussianS(et,meanGaussEtS[0.0614,0,0.2],sigmaGaussEtS[0.0116,0,0.2])");
+//  rws.factory("Decay::errorSignal(et,tauEtS[0.0481,0,0.2],etGaussianS,SingleSided]");
+
+	rws.factory("RSUM::errorSignal(x1[0,1]*Gaussian::g1(et,m1[0,1],s1[0,0.1]),x2[0,1]*Gaussian::g2(et,m2[0,1],s2[0,0.1]),x3[0,1]*Gaussian::g3(et,m3[0,1],s3[0,0.1]),x4[0,1]*Gaussian::g4(et,m4[0,1],s4[0,0.1]),Gaussian::g5(et,m5[0,1],s5[0,0.1]))");
+
+//BDT
+//ws.factory("RSUM::errorSignal(x1[0.330954]*Gaussian::g1(et,m1[0.0712217],s1[0.0148496]),x2[0.550785]*Gaussian::g2(et,m2[0.101322],s2[0.0227363]),x3[0.0667897]*Gaussian::g3(et,m3[0.20006],s3[0.0767951]),x4[0.615575]*Gaussian::g4(et,m4[0.142648],s4[0.0366608]),Gaussian::g5(et,m5[0.0488805],s5[0.00966675]))");
+
+//PRL
+//rws.factory("RSUM::errorSignal(x1[0.0164413]*Gaussian::g1(et,m1[0.194133],s1[0.0754175]),x2[0.371492]*Gaussian::g2(et,m2[0.0968759],s2[0.0212262]),x3[0.185101]*Gaussian::g3(et,m3[0.0477364],s3[0.00920869]),x4[0.705251]*Gaussian::g4(et,m4[0.068875],s4[0.0141091]),Gaussian::g5(et,m5[0.135975],s5[0.033775]))");
+
+	rws.pdf("errorSignal")->fitTo(dataSet, RooFit::NumCPU(4));
+
+
+        cout << "rws.factory(\"RSUM::errorSignal("
+	     << "x1["<< rws.var("x1")->getVal() <<"]*Gaussian::g1(et,m1["<< rws.var("m1")->getVal() <<"],s1["<< rws.var("s1")->getVal() <<"]),"
+             << "x2["<< rws.var("x2")->getVal() <<"]*Gaussian::g2(et,m2["<< rws.var("m2")->getVal() <<"],s2["<< rws.var("s2")->getVal() <<"]),"
+             << "x3["<< rws.var("x3")->getVal() <<"]*Gaussian::g3(et,m3["<< rws.var("m3")->getVal() <<"],s3["<< rws.var("s3")->getVal() <<"]),"
+             << "x4["<< rws.var("x4")->getVal() <<"]*Gaussian::g4(et,m4["<< rws.var("m4")->getVal() <<"],s4["<< rws.var("s4")->getVal() <<"]),"
+             << "Gaussian::g5(et,m5["<< rws.var("m5")->getVal() <<"],s5["<< rws.var("s5")->getVal() <<"]))\");"
+	     << endl;
+
+	TCanvas canvas("canvas","Sigma (et)", 600,600);
+
+	RooPlot *et_frame = et.frame();
+	dataSet.plotOn(et_frame);
+	rws.pdf("errorSignal")->plotOn(et_frame);
+	et_frame->Draw();
+	gPad->SetLogy(kTRUE);
+	
+/*
 	TF2 *fitFcn = new TF2("fitFcn", fitFunction, -1.0, 1.0, -TMath::Pi(), TMath::Pi(), 9);
 	fitFcn->SetParameters(0,0,0,0,0,0,0,0,0);
 	//acceptance_histo->Fit(fitFcn,"EV");
@@ -166,8 +180,10 @@ int main() {
 	std::cout << "static const Double_t e_02p1 = " << fitFcn->GetParameter(7)/max_bin << ';' << std::endl;
 	std::cout << "static const Double_t e_02p2 = " << fitFcn->GetParameter(8)/max_bin << ';' << std::endl;
 
-	canvas.SaveAs("acceptance.eps");
+*/
+	canvas.SaveAs("et_signal.png");
 
 	return 1;
+
 }
 

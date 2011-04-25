@@ -96,7 +96,7 @@ int main (int argc, char **argv)
   //ws->pdf("tmpErrBkg")->fitTo(*dataBkg, RooFit::NumCPU(nCPU));
 
   cout << "Fitting Background form sidebands" << endl;
-
+/*
   ws->factory("SUM::backgroundT(xprompt*timeBkgPR,timeBkgNP)");
 
   ws->pdf("backgroundT")->fitTo(*dataBkg,RooFit::NumCPU(nCPU),RooFit::Hesse(kFALSE),RooFit::Minos(kFALSE));
@@ -114,7 +114,7 @@ int main (int argc, char **argv)
   ws->var("tauNeg")->setConstant(kTRUE);
   ws->var("xn")->setConstant(kTRUE);
   ws->var("xp")->setConstant(kTRUE);
-  ws->var("xpp")->setConstant(kTRUE);
+//  ws->var("xpp")->setConstant(kTRUE);
   ws->var("xprompt")->setConstant(kTRUE);
   ws->var("scale")->setConstant(kTRUE);
 
@@ -129,10 +129,12 @@ int main (int argc, char **argv)
   ws->factory("SUM::backgroundMassTime(xs*signalMassTime,backgroundTM)");
   ws->factory("SUM::massTimeModel(xs*signalMassTime,backgroundMassTime)");
 
-  ws->pdf("massTimeModel")->fitTo(*data,RooFit::NumCPU(nCPU),RooFit::Hesse(kFALSE),RooFit::Minos(kFALSE));
+//  ws->pdf("massTimeModel")->fitTo(*data,RooFit::NumCPU(nCPU),RooFit::Hesse(kFALSE),RooFit::Minos(kFALSE));
+-*
   ws->var("meanGaussEtS")->setConstant(kTRUE);
   ws->var("sigmaGaussEtS")->setConstant(kTRUE);
   ws->var("tauEtS")->setConstant(kTRUE);
+*-
 
   ws->var("mu")->setConstant(kTRUE);
   ws->var("sigmaM")->setConstant(kTRUE);
@@ -141,37 +143,26 @@ int main (int argc, char **argv)
 
   ////ws->var("xsNoTag")->setConstant(kTRUE);
 
-
+*/
   ws->factory("PROD::PromptNM(timeBkgPR,anglePR)");
   ws->factory("PROD::NonPromptNM(timeBkgNP,angleNP)");
   ws->factory("SUM::backgroundNM(xprompt*PromptNM,NonPromptNM)");
 
-  ws->pdf("backgroundNM")->fitTo(*dataBkg,RooFit::NumCPU(nCPU),RooFit::Hesse(kFALSE),RooFit::Minos(kFALSE));
-  ws->var("npe02m1")->setConstant(kTRUE);
-  ws->var("npe02p0")->setConstant(kTRUE);
-  ws->var("npe02p2")->setConstant(kTRUE);
-  ws->var("npe22p1")->setConstant(kTRUE);
-
-  ws->var("pre01p1")->setConstant(kTRUE);
-  ws->var("pre02m2")->setConstant(kTRUE);
-  ws->var("pre02p0")->setConstant(kTRUE);
-  ws->var("pre02p1")->setConstant(kTRUE);
-  ws->var("pre02p2")->setConstant(kTRUE);
-  ws->var("pre20p0")->setConstant(kTRUE);
-  ws->var("pre22p2")->setConstant(kTRUE);
+  ws->pdf("backgroundNM")->fitTo(*dataBkg,RooFit::NumCPU(nCPU),RooFit::Hesse(kFALSE),RooFit::Minos(kFALSE),RooFit::Verbose(kFALSE));
 
   if (!justBkg)
   {
   cout << "Fitting signal only" << endl;
-  ws->pdf("model")->fitTo(*data ,RooFit::NumCPU(nCPU),RooFit::Hesse(kFALSE),RooFit::Minos(kFALSE));
+  //ws->pdf("model")->fitTo(*data ,RooFit::NumCPU(nCPU),RooFit::Hesse(kFALSE),RooFit::Minos(kFALSE));
 
+/*
   ws->var("tauLngLngPos")->setConstant(kFALSE);
   ws->var("tauLngPos")->setConstant(kFALSE);
   ws->var("tauPos")->setConstant(kFALSE);
   ws->var("tauNeg")->setConstant(kFALSE);
   ws->var("xn")->setConstant(kFALSE);
   ws->var("xp")->setConstant(kFALSE);
-  ws->var("xpp")->setConstant(kFALSE);
+//  ws->var("xpp")->setConstant(kFALSE);
   ws->var("xprompt")->setConstant(kFALSE);
   ws->var("scale")->setConstant(kFALSE);
 
@@ -179,22 +170,10 @@ int main (int argc, char **argv)
   ws->var("sigmaM")->setConstant(kFALSE);
   ws->var("slopePR")->setConstant(kFALSE);
   ws->var("slopeNP")->setConstant(kFALSE);
-
-  ws->var("npe02m1")->setConstant(kFALSE);
-  ws->var("npe02p0")->setConstant(kFALSE);
-  ws->var("npe02p2")->setConstant(kFALSE);
-  ws->var("npe22p1")->setConstant(kFALSE);
-
-  ws->var("pre01p1")->setConstant(kFALSE);
-  ws->var("pre02m2")->setConstant(kFALSE);
-  ws->var("pre02p0")->setConstant(kFALSE);
-  ws->var("pre02p1")->setConstant(kFALSE);
-  ws->var("pre02p2")->setConstant(kFALSE);
-  ws->var("pre20p0")->setConstant(kFALSE);
-  ws->var("pre22p2")->setConstant(kFALSE);
+*/
 
   cout << "FullFit" << endl;
-  RooFitResult *rfr = ws->pdf("model")->fitTo(*data, RooFit::NumCPU(nCPU), RooFit::Save(), RooFit::Verbose(kFALSE));
+  RooFitResult *rfr = ws->pdf("model")->fitTo(*data/*, RooFit::ConditionalObservables(*ws->var("d"))*/, RooFit::NumCPU(nCPU), RooFit::Save(), RooFit::Verbose(kFALSE));
   rfr->Write("fitResult");
   }
 
