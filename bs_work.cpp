@@ -80,7 +80,7 @@ int main (int argc, char **argv)
   ////ws->import(dilution);
 
   ws->factory("{DZero[0],D10to20[0.102],D20to35[0.184],D35to45[0.325],D45to60[0.486],D60to100[0.543]}");
-  ws->factory("{DG[0.09,0,1],Dm[17.77,17.41,18.13],tau[1.5,1.0,2.0],beta[0.0,-INF,INF],delta_l[-2.96,-6,3],delta_p[2.97,0,6],delta_s[0.0,-6.28,6.128],fs[0.1,0,1],scale[1.0,0.5,1.5]}");
+  ws->factory("{DG[0.09,-1,1],Dm[17.77,17.41,18.13],tau[1.5,1.0,2.0],beta[0.0,-3.15,3.15],delta_l[-2.96,-6.29,6.29],delta_p[2.97,-6.29,6.29],delta_s[0.0,-6.29,6.29],fs[0.15,0,1],scale[1.0,0.5,1.5]}");
 ////  ws->factory("{DG[0.09,0,1],Dm[17.77,17.41,18.13],tau[1.5,1.0,2.0],beta[0.0,-INF,INF],delta_l[-2.96,-6,3],delta_p[2.97,0,6],delta_s[0],fs[0],scale[1.0,0.5,1.5]}");
 ////  ws->factory("{DG[0.09,0,1],Dm[17.77,17.41,18.13],tau[1.5,1.0,2.0],beta[0.0],delta_l[-2.96,-6,3],delta_p[2.97,0,6],delta_s[0],fs[0],scale[1.0,0.5,1.5]}");
   ws->factory("Gaussian::DmConstraint(Dm,17.77,0.12");
@@ -136,7 +136,7 @@ ws->factory("RSUM::errorSignal(x1[0.0164413]*Gaussian::g1(et,m1[0.194133],s1[0.0
   /* Full Signal PDF */
   ws->factory("PROD::signalTimeAngle(timeAngle|et,errorSignal");
 
-  ws->factory("PROD::signal(massSignal,signalTimeAngle,DmConstraint)");
+  ws->factory("PROD::signal(massSignal,signalTimeAngle)");
 
   /* ************************************* Background ********************************************** */
   /* Mass */
@@ -405,7 +405,8 @@ ws->var("pre22p2")->setConstant(kTRUE); //36
   ws->factory("SUM::background(xprompt[0.853,0,1]*Prompt,NonPrompt)");
 
   /* Full PDF */
-  ws->factory("SUM::model(xs[0.1,0,1]*signal,background)");
+  ws->factory("SUM::modelnc(xs[0.1,0,1]*signal,background)");
+  ws->factory("PROD::model(modelnc,DmConstraint)");
 
   ws->Write("rws");
   outFile.Close();

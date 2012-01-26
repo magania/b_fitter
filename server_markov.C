@@ -22,9 +22,9 @@
 #include "TRandom3.h"
 
 
-static const int CHILDREN = 64;
-static int NSAMPLE = 100000;
-static const char* fitWorkspaceFile = "ws_BDT20_fit.root";
+//static const int CHILDREN = 120;
+static int NSAMPLE = 1000000;
+static const char* fitWorkspaceFile = "workspace.root";
 static const bool DEBUG = false;
 
 static bool EVOL = false;
@@ -37,12 +37,12 @@ class Cholesky : public TDecompChol{
                 Decompose();
         }
 
-        double operator()(int i, int j){
+        Double_t operator()(int i, int j){
                 return fU(j,i);
         }
 };
 
-void server_markov() {
+void server_markov(const int CHILDREN) {
    TMessage::EnableSchemaEvolutionForAll(EVOL);
 
    gSystem->Load("lib/libBFitter.so");
@@ -63,7 +63,7 @@ void server_markov() {
 
    RooAbsReal *nll;
    if (DEBUG)
-       nll = ws->pdf("model")->createNLL(*allData, RooFit::Verbose(false), RooFit::NumCPU(4), RooFit::ConditionalObservables(*ws->var("d")));
+       nll = ws->pdf("modelnc")->createNLL(*allData, RooFit::Verbose(false), RooFit::NumCPU(4), RooFit::ConditionalObservables(*ws->var("d")));
 
    TObjArray names(nParams);
    for (int i=0; i<nParams; i++)
@@ -74,7 +74,8 @@ void server_markov() {
    for (int i=0; i<CHILDREN; i++)
 	data[i] = (RooDataSet*) allData->emptyClone();
 
-   for (Int_t i=0; i<allData->numEntries(); i++)
+   int n_entries = allData->numEntries();
+   for (Int_t i=0; i<n_entries; i++)
         data[i%CHILDREN]->add(*allData->get(i));
 
    if (DEBUG){
@@ -85,7 +86,8 @@ void server_markov() {
    }
 
 
-   (*sigma) *= 1.0/nParams;
+//   (*sigma) *= 1.0/nParams;
+   (*sigma) *= 1.0/16.;
    Cholesky R(*sigma);
 
    if (DEBUG){
@@ -99,8 +101,10 @@ void server_markov() {
 
    // Accept a connection and return a full-duplex communication socket.
    TSocket *sock[CHILDREN];
-   for(int i=0; i<CHILDREN; i++)
+   for(int i=0; i<CHILDREN; i++){
       sock[i] = ss->Accept();
+      cout << "Accepted = " << i << endl; 
+   }
 
    // tell the clients to start
    for(Int_t i=0; i<CHILDREN; i++){
@@ -142,7 +146,7 @@ void server_markov() {
 
    TFile *out_file = new TFile("mcmc.root","RECREATE");
    TTree *tree = new TTree("mcmc","mcmc");
-   double *pmu = mu.GetMatrixArray();
+   Double_t *pmu = mu.GetMatrixArray();
    for (int i=0; i<nParams; i++){
       RooRealVar *var = (RooRealVar*) &(fitParams[i]);
       pmu[i] =  var->getVal();
@@ -150,6 +154,10 @@ void server_markov() {
       data_type += "/D";
       tree->Branch(var->GetName(),&pmu[i],data_type.Data());
    }
+   Double_t old_nll = fitResult->minNll() + 10.0;
+   tree->Branch("L",&old_nll,"L/D");
+   int n_found=0;
+   tree->Branch("n",&n_found,"n/I");
    tree->Fill();
 
    fitWorkspace->Close();
@@ -158,11 +166,15 @@ void server_markov() {
    for(int i=0; i<CHILDREN; i++)
         monitor->Add(sock[i]);
 
+   cout << "Starting chain calculation ..." << endl;
+
    TRandom3 *aleatorio = new TRandom3(0);
-   double L[CHILDREN];
-   int n_found=0;
-   double g[50], x[50];
-   double old_nll = fitResult->minNll();
+   Double_t L[CHILDREN];
+   Double_t g[50], x[50];
+   RooRealVar *vars[50];
+   for (int i=0; i<nParams; i++)
+           vars[i] = ws->var( ((TObjString*)names.At(i))->GetString().Data() );
+   Double_t alpha, new_nll;
    while (n_found<NSAMPLE) {
 	   /* Generate sample of multivariate gaussian  g[i] = Gi(0,1)
 	    * x = R*g    R = Low-Diagonal Cholesky Matrix SIGMA = R*R^T
@@ -179,6 +191,17 @@ void server_markov() {
           for (int i=0; i<nParams; i++)
                    mup(i) = mu(i) + x[i];
           
+          bool outOfRange = false;
+	  for (int i=0; i<nParams; i++)
+		if ( mup[i] < vars[i]->getMin() || mup[i] > vars[i]->getMax() ) {
+			outOfRange = true;
+//			cout << "Out Of Range" << endl;
+			break;
+ 	  	}
+	  if (outOfRange)
+		continue;
+
+/*          
 	  if (DEBUG){
 		cout << "G: "<< endl;
 		for (int i=0; i<nParams; i++)
@@ -197,8 +220,8 @@ void server_markov() {
 			cout << mup(i)<< "\t";
 		cout << endl;
 	  }
+*/
 
-//	   cout << "sending ..." << endl;
 	   /* Send point */
            message = new TMessage(kPOINT);
            message->WriteObject(&mup);
@@ -219,36 +242,46 @@ void server_markov() {
                  L[n_complete] = (*likelihood)[0];
                  n_complete++;
 
+/*
 	   	if (DEBUG)
 			cout << "Received = " << n_complete << endl;
-                 delete message;
+*/
+                delete likelihood;
+                delete message;
            }
-	   
+	  
+/* 
 	   if (DEBUG){
 		for (int i=0; i<CHILDREN; i++)
 			cout << "i = " << i << "  L = " << L[i] << endl;
 	   }
+*/
 
            /* Metropolis-Hasting */
-	   double new_nll = 0;
+	   new_nll = 0;
            for (int i=0; i<CHILDREN; i++)
                 new_nll += L[i];
-            
+
+//	   cout << ((TObjString*)names.At(3))->GetString().Data() << " = " << mup[3] << endl;
+//           cout << new_nll << "   " << ((mup[3]-17.77)*(mup[3]-17.77))/0.0288 << endl;
+           new_nll += ((mup[3]-17.77)*(mup[3]-17.77))/0.0288;
+  
+/*          
 	   if (DEBUG){
    		for (int i=0; i<nParams; i++)
 	           ws->var( ((TObjString*)names.At(i))->GetString().Data() )->setVal(mup(i));
 		double test_nll = nll->getVal();
 	
 		cout << "TEST NLL = " << new_nll << " - " << test_nll << " = " << new_nll-test_nll << "  " << old_nll << endl;
-//		if (  TMath::Abs(new_nll-test_nll) >  1e-5 )
-//			exit(1);
+		if (  TMath::Abs(new_nll-test_nll) >  1e-5 )
+			exit(1);
 	   }
 
-
 	   if (DEBUG)
-		   cout << " new_nll = " << new_nll << endl;
+		   cout << "old_nll = " << old_nll << "   new_nll = " << new_nll << endl;
+*/
 
-           double alpha = TMath::Exp(-new_nll + old_nll);
+           alpha = TMath::Exp(-new_nll + old_nll);
 //           cout << "alpha =" << alpha << endl;
 
            if (aleatorio->Uniform()<alpha){
@@ -257,7 +290,10 @@ void server_markov() {
                 for (int i=0; i<nParams; i++)
                     mu(i) = mup(i);
                 tree->Fill();
-		cout << "N FOUND = " << n_found << endl;
+//                if (n_found % 1000 == 1)
+    		   cout << "N FOUND = " << n_found << endl;
+                if (n_found % 10000 == 1)
+                   tree->Write();
 	   }
     }
 

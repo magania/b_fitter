@@ -18,13 +18,13 @@
 
 static int NUM_CPU = 1;
 static bool VERBOSE = false;
-static const char* SERVER = "higgs.fis.cinvestav.mx";
+//static const char* SERVER = "tlaloc-clued0.fnal.gov";
 
 static bool EVOL = false;
 static unsigned int kINIT  = 20000;
 static unsigned int kPOINT = 20001;
 
-int client_markov(){
+int client_markov(const char* SERVER){
    TMessage::EnableSchemaEvolutionForAll(EVOL);
 
    gSystem->Load("lib/libBFitter.so");
@@ -51,12 +51,10 @@ int client_markov(){
 
    data->Print();
 
-/*
    ws->Print();
    data->Print();
    names->Print();
-   id->Print();
-*/
+//   id->Print();
 
    int N = names->GetSize();
    cout << "N = " << N << endl;
@@ -70,7 +68,7 @@ int client_markov(){
    for (int i=0; i<N; i++)
 	params[i] = ws->var( ((TObjString*)names->At(i))->GetString().Data() );
 
-   RooAbsReal *nll = ws->pdf("model")->createNLL(*data, RooFit::Verbose(VERBOSE), RooFit::NumCPU(NUM_CPU), RooFit::ConditionalObservables(*ws->var("d")));
+   RooAbsReal *nll = ws->pdf("modelnc")->createNLL(*data, RooFit::Verbose(VERBOSE), RooFit::NumCPU(NUM_CPU), RooFit::ConditionalObservables(*ws->var("d")));
 
    TVectorD L(1);
    while(true){

@@ -173,7 +173,8 @@ int main (int argc, char **argv)
 */
 
   cout << "FullFit" << endl;
-  RooFitResult *rfr = ws->pdf("model")->fitTo(*data/*, RooFit::ConditionalObservables(*ws->var("d"))*/, RooFit::NumCPU(nCPU), RooFit::Save(), RooFit::Verbose(kFALSE));
+//  ws->var("beta")->setVal(0.5);
+  RooFitResult *rfr = ws->pdf("model")->fitTo(*data ,RooFit::ConditionalObservables(*ws->var("d")), RooFit::NumCPU(nCPU), RooFit::Save(), RooFit::Verbose(kFALSE));
   rfr->Write("fitResult");
   }
 

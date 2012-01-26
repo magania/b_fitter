@@ -68,45 +68,68 @@ int main (int argc, char **argv)
   RooWorkspace* ws = (RooWorkspace*) inFile.Get("rws");
   TFile outFile(chOutFile,"RECREATE");
 
+/*
+  ws->var("tau")->setVal(1.417);
+  ws->var("DG")->setVal(0.151);
+  ws->var("beta")->setVal(0.25);
+  ws->var("A02")->setVal(0.553);
+  ws->var("A1")->setVal(0.487);
+  ws->var("delta_l")->setVal(3.15);
+  ws->var("fs")->setVal(0.147);
+*/
+
+//  ws->var("delta_l")->setConstant(kTRUE);
+//  ws->var("delta_p")->setConstant(kTRUE);
+//  ws->var("Dm")->setConstant(kTRUE);
+
   //*ws->var("xs") = numSignal/(numSignal+numBkg);
 //  int numSignal = numEvents * ws->var("xs")->getVal();
 //  int numBkg = numEvents - numSignal;
 
   ws->factory("Gaussian::dilutionGauss(d,0,0.276)");
-  ws->factory("SUM::dSignalPDF(xds[0.109]*dilutionGauss,TruthModel(d))");
-  ws->factory("SUM::dBkgPDF(xdb[0.109]*dilutionGauss,TruthModel(d))");
+  //ws->factory("SUM::dSignalPDF(xds[0.109]*dilutionGauss,TruthModel(d))");
+  //ws->factory("SUM::dBkgPDF(xdb[0.109]*dilutionGauss,TruthModel(d))");
+  ws->factory("SUM::dSignalPDF(xds[1]*dilutionGauss,TruthModel(d))");
+  ws->factory("SUM::dBkgPDF(xdb[1]*dilutionGauss,TruthModel(d))");
 
+/*
   ws->factory("GaussModel::xetGaussianS(et,meanGaussEtS,sigmaGaussEtS)");
   ws->factory("Decay::xerrorSignal(et,tauEtS,xetGaussianS,SingleSided]");
 
   ws->factory("PROD::xsignalTimeAngle(timeAngle|et,xerrorSignal");
   ws->factory("PROD::xsignal(massSignal,xsignalTimeAngle,DmConstraint)");
+*/
 
   RooDataSet* dSignalData = ws->pdf("dSignalPDF")->generate(RooArgSet(*ws->var("d")),numSignal);
-  RooDataSet *dataSignal = ws->pdf("xsignal")->generate(RooArgSet(*ws->var("m"),*ws->var("t"),*ws->var("et"),*ws->var("cpsi"),*ws->var("ctheta"),*ws->var("phi")), RooFit::ProtoData(*dSignalData));
-
-  ws->factory("Decay::xnegativeDecay(t,tauNeg,resolution,Flipped)");
-  ws->factory("Decay::xpositiveDecay(t,tauPos,resolution,SingleSided)");
-  ws->factory("Decay::xpositiveLongDecay(t,tauLngPos,resolution,SingleSided)");
-  ws->factory("Decay::xpositiveLongLongDecay(t,tauLngLngPos,resolution,SingleSided)");
-
-  ws->factory("RSUM::xtBkgNP(xn*xnegativeDecay,xp*xpositiveDecay,xpp*xpositiveLongDecay,xpositiveLongLongDecay");
+  RooDataSet *dataSignal = ws->pdf("signal")->generate(RooArgSet(*ws->var("m"),*ws->var("t"),*ws->var("et"),*ws->var("cpsi"),*ws->var("ctheta"),*ws->var("phi")), RooFit::ProtoData(*dSignalData));
 
   ws->factory("GaussModel::xetGaussianPR(et,meanGaussEtPR,sigmaGaussEtPR)");
   ws->factory("Decay::xerrBkgPR(et,tauEtPR,xetGaussianPR,SingleSided]");
+
   ws->factory("GaussModel::xetGaussianNP(et,meanGaussEtNP,sigmaGaussEtNP)");
   ws->factory("Decay::xerrBkgNP(et,tauEtNP,xetGaussianNP,SingleSided]");
 
+
+  /* Time */
+  ws->factory("GaussModel::xresolution(t,0,scale,et)");
+  ws->factory("Decay::xnegativeDecay(t,tauNeg,xresolution,Flipped)");
+  ws->factory("Decay::xpositiveDecay(t,tauPos,xresolution,SingleSided)");
+  ws->factory("Decay::xpositiveLongDecay(t,tauLngPos,xresolution,SingleSided)");
+
+  ws->factory("RSUM::xtBkgNP(xn*xnegativeDecay,xp*xpositiveDecay,xpositiveLongDecay");
+
+/*               Promt and Non-Prompt                       */
    ws->factory("PROD::xtimeBkgNP(xtBkgNP|et,xerrBkgNP)");
-   ws->factory("PROD::xtimeBkgPR(resolution|et,xerrBkgPR)");
+   ws->factory("PROD::xtimeBkgPR(xresolution|et,xerrBkgPR)");
 
    ws->factory("PROD::xPrompt(massBkgPR,xtimeBkgPR,anglePR)");
    ws->factory("PROD::xNonPrompt(massBkgNP,xtimeBkgNP,angleNP)");
 
   ws->factory("SUM::xbackground(xprompt*xPrompt,xNonPrompt)");
 
+
   RooDataSet* dBkgData = ws->pdf("dBkgPDF")->generate(RooArgSet(*ws->var("d")),numBkg);
-  RooDataSet* dataBkg = ws->pdf("xbackground")->generate(RooArgSet(*ws->var("m"),*ws->var("t"),*ws->var("et"),*ws->var("cpsi"),*ws->var("ctheta"),*ws->var("phi")), numBkg);
+  RooDataSet* dataBkg  = ws->pdf("xbackground")->generate(RooArgSet(*ws->var("m"),*ws->var("t"),*ws->var("et"),*ws->var("cpsi"),*ws->var("ctheta"),*ws->var("phi")), numBkg);
 
   dataBkg->merge(dBkgData);
   dataSignal->SetName("dataGenSignal");
@@ -121,7 +144,17 @@ int main (int argc, char **argv)
   ws->import(*dataSignal);
 
   //RooFitResult *fit_result = ws->pdf("model")->fitTo(*ws->data("data"), RooFit::Save(kTRUE), RooFit::ConditionalObservables(*ws->var("d")), RooFit::NumCPU(2), RooFit::PrintLevel(3));
+/*
+        gROOT->SetStyle("Plain");
 
+        TCanvas canvas("canvas", "canvas", 400,400);
+
+        RooPlot *m_frame = ws->var("t")->frame();
+        dataSignal->plotOn(m_frame, RooFit::MarkerSize(0.3));
+        m_frame->Draw();
+
+	canvas.SaveAs("m_toy_plot.png");
+*/
 /*
         gROOT->SetStyle("Plain");
 
@@ -169,6 +202,10 @@ int main (int argc, char **argv)
        canvas.SaveAs("t.png");
 
 */
+
+  ws->data("dataGen")->Print();
+  ws->data("dataGenSignal")->Print();
+  ws->data("dataGenBkg")->Print();
 
   ws->Write("rws");
   outFile.Close();

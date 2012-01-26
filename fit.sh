@@ -5,6 +5,13 @@ BETA=0.1
 SAMPLE=BDT20
 
 
+
+
+
+
+
+
+
 die()
 {
 echo "$@"
@@ -24,8 +31,9 @@ scp elsanto-clued0:/work/elsanto-clued0/Z/root_tgz/root_v5.26.00.Linux-slc4-gcc3
 tar xzf root_v5.26.00.Linux-slc4-gcc3.4.tar.gz || die "EE: Untar failed."
 . root/bin/thisroot.sh || die "EE: Setup root failed."
 
-scp elsanto-clued0:/work/elsanto-clued0/Z/Bs/b_fitter/ws_${SAMPLE}_fit.root . || die "EE: Copy fit failed."
-scp elsanto-clued0:/work/elsanto-clued0/Z/Bs/b_fitter/ScanBs . || die "EE: Copy ScanBs failed."
+#scp elsanto-clued0:/work/elsanto-clued0/Z/Bs/b_fitter/ws_${SAMPLE}_fit.root . || die "EE: Copy fit failed."
+scp elsanto-clued0:/work/elsanto-clued0/Z/Bs/b_fit_${SAMPLE}/ws_${SAMPLE}_fit.root . || die "EE: Copy fit failed."
+scp elsanto-clued0:/work/elsanto-clued0/Z/Bs/b_fit_${SAMPLE}/ScanBs . || die "EE: Copy ScanBs failed."
 
 ./ScanBs -d $DG -b $BETA -i ws_${SAMPLE}_fit.root -o ws_${SAMPLE}_fit_${DG}_${BETA}.root || die "EE: ScanBs failed."
 

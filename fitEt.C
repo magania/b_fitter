@@ -32,6 +32,8 @@ int fitEt() {
 	gSystem->Load("libMathMore");
 	gROOT->SetStyle("Plain");
 
+        TRandom3 rnd(6438238139);
+
 	TFile acceptance_file("/work/elsanto-clued0/Z/Bs/tmva/bs_flat.root");
 	TTree* acceptance_tree = (TTree*) acceptance_file.Get("tree");
 
@@ -94,6 +96,8 @@ int fitEt() {
 //		std::cout << muPlusPt << ' ' << muMinusPt << ' ' << muPlusEta << ' ' << muMinusEta << ' ' << weight << std::endl;
 	}
 
+	cout << "All Entries = " << dataSet.sumEntries() << " " << et_histo->GetSumOfWeights() << endl;
+
 	RooWorkspace rws;
 	rws.import(et);
 //	rws.import(dataSet);
@@ -101,15 +105,20 @@ int fitEt() {
 //  rws.factory("GaussModel::etGaussianS(et,meanGaussEtS[0.0614,0,0.2],sigmaGaussEtS[0.0116,0,0.2])");
 //  rws.factory("Decay::errorSignal(et,tauEtS[0.0481,0,0.2],etGaussianS,SingleSided]");
 
-	rws.factory("RSUM::errorSignal(x1[0,1]*Gaussian::g1(et,m1[0,1],s1[0,0.1]),x2[0,1]*Gaussian::g2(et,m2[0,1],s2[0,0.1]),x3[0,1]*Gaussian::g3(et,m3[0,1],s3[0,0.1]),x4[0,1]*Gaussian::g4(et,m4[0,1],s4[0,0.1]),Gaussian::g5(et,m5[0,1],s5[0,0.1]))");
+//	rws.factory("RSUM::errorSignal(x1[0,1]*Gaussian::g1(et,m1[0,1],s1[0,0.1]),x2[0,1]*Gaussian::g2(et,m2[0,1],s2[0,0.1]),x3[0,1]*Gaussian::g3(et,m3[0,1],s3[0,0.1]),x4[0,1]*Gaussian::g4(et,m4[0,1],s4[0,0.1]),Gaussian::g5(et,m5[0,1],s5[0,0.1]))");
 
 //BDT
-//ws.factory("RSUM::errorSignal(x1[0.330954]*Gaussian::g1(et,m1[0.0712217],s1[0.0148496]),x2[0.550785]*Gaussian::g2(et,m2[0.101322],s2[0.0227363]),x3[0.0667897]*Gaussian::g3(et,m3[0.20006],s3[0.0767951]),x4[0.615575]*Gaussian::g4(et,m4[0.142648],s4[0.0366608]),Gaussian::g5(et,m5[0.0488805],s5[0.00966675]))");
+rws.factory("RSUM::errorSignal(x1[0.330954,0,1]*Gaussian::g1(et,m1[0.0712217,0,1],s1[0.0148496,0,1]),x2[0.550785,0,1]*Gaussian::g2(et,m2[0.101322,0,1],s2[0.0227363,0,1]),x3[0.0667897,0,1]*Gaussian::g3(et,m3[0.20006,0,1],s3[0.0767951,0,1]),x4[0.615575,0,1]*Gaussian::g4(et,m4[0.142648,0,1],s4[0.0366608,0,1]),Gaussian::g5(et,m5[0.0488805,0,1],s5[0.00966675,0,1]))");
+
+rws.factory("RSUM::errorSignal1(y1[0.367333]*Gaussian::h1(et,n1[0.0714381],t1[0.0142117]),y2[0.545832]*Gaussian::h2(et,n2[0.0983138],t2[0.0221079]),y3[0.0819051]*Gaussian::h3(et,n3[0.186739],t3[0.0687823]),y4[0.545434]*Gaussian::h4(et,n4[0.141453],t4[0.0354564]),Gaussian::h5(et,n5[0.0485111],t5[0.00933244]))"); // variation 1
+
+rws.factory("RSUM::errorSignal2(z1[0.347236]*Gaussian::i1(et,o1[0.0707638],u1[0.0153091]),z2[0.540398]*Gaussian::i2(et,o2[0.0992327],u2[0.0225856]),z3[0.0998333]*Gaussian::i3(et,o3[0.182831],u3[0.0718767]),z4[0.612224]*Gaussian::i4(et,o4[0.143124],u4[0.0347972]),Gaussian::i5(et,o5[0.0486886],u5[0.0092695]))"); // variation 2
+
 
 //PRL
-//rws.factory("RSUM::errorSignal(x1[0.0164413]*Gaussian::g1(et,m1[0.194133],s1[0.0754175]),x2[0.371492]*Gaussian::g2(et,m2[0.0968759],s2[0.0212262]),x3[0.185101]*Gaussian::g3(et,m3[0.0477364],s3[0.00920869]),x4[0.705251]*Gaussian::g4(et,m4[0.068875],s4[0.0141091]),Gaussian::g5(et,m5[0.135975],s5[0.033775]))");
+//rws.factory("RSUM::errorSignal(x1[0.0164413,0,1]*Gaussian::g1(et,m1[0.194133,0,1],s1[0.0754175,0,1]),x2[0.371492,0,1]*Gaussian::g2(et,m2[0.0968759,0,1],s2[0.0212262,0,1]),x3[0.185101,0,1]*Gaussian::g3(et,m3[0.0477364,0,1],s3[0.00920869,0,1]),x4[0.705251,0,1]*Gaussian::g4(et,m4[0.068875,0,1],s4[0.0141091,0,1]),Gaussian::g5(et,m5[0.135975,0,1],s5[0.033775,0,1]))");
 
-	rws.pdf("errorSignal")->fitTo(dataSet, RooFit::NumCPU(4));
+//	rws.pdf("errorSignal")->fitTo(dataSet, RooFit::NumCPU(4));
 
 
         cout << "rws.factory(\"RSUM::errorSignal("
@@ -118,12 +127,31 @@ int fitEt() {
              << "x3["<< rws.var("x3")->getVal() <<"]*Gaussian::g3(et,m3["<< rws.var("m3")->getVal() <<"],s3["<< rws.var("s3")->getVal() <<"]),"
              << "x4["<< rws.var("x4")->getVal() <<"]*Gaussian::g4(et,m4["<< rws.var("m4")->getVal() <<"],s4["<< rws.var("s4")->getVal() <<"]),"
              << "Gaussian::g5(et,m5["<< rws.var("m5")->getVal() <<"],s5["<< rws.var("s5")->getVal() <<"]))\");"
-	     << endl;
+	     << endl<<endl;
+
+        cout << "rws.factory(\"RSUM::errorSignal("
+	     << "x1["<< rnd.Gaus(rws.var("x1")->getVal(),rws.var("x1")->getError()) <<"]*Gaussian::g1(et,m1["<< rnd.Gaus(rws.var("m1")->getVal(),rws.var("m1")->getError()) <<"],s1["<< rnd.Gaus(rws.var("s1")->getVal(),rws.var("s1")->getError()) <<"]),"
+             << "x2["<< rnd.Gaus(rws.var("x2")->getVal(),rws.var("x2")->getError()) <<"]*Gaussian::g2(et,m2["<< rnd.Gaus(rws.var("m2")->getVal(),rws.var("m2")->getError()) <<"],s2["<< rnd.Gaus(rws.var("s2")->getVal(),rws.var("s2")->getError()) <<"]),"
+             << "x3["<< rnd.Gaus(rws.var("x3")->getVal(),rws.var("x3")->getError()) <<"]*Gaussian::g3(et,m3["<< rnd.Gaus(rws.var("m3")->getVal(),rws.var("m3")->getError()) <<"],s3["<< rnd.Gaus(rws.var("s3")->getVal(),rws.var("s3")->getError()) <<"]),"
+             << "x4["<< rnd.Gaus(rws.var("x4")->getVal(),rws.var("x4")->getError()) <<"]*Gaussian::g4(et,m4["<< rnd.Gaus(rws.var("m4")->getVal(),rws.var("m4")->getError()) <<"],s4["<< rnd.Gaus(rws.var("s4")->getVal(),rws.var("s4")->getError()) <<"]),"
+             << "Gaussian::g5(et,m5["<< rnd.Gaus(rws.var("m5")->getVal(),rws.var("m5")->getError()) <<"],s5["<< rnd.Gaus(rws.var("s5")->getVal(),rws.var("s5")->getError()) <<"]))\");"
+	     << endl<<endl;
+
+        cout << "rws.factory(\"RSUM::errorSignal("
+	     << "x1["<< rnd.Gaus(rws.var("x1")->getVal(),rws.var("x1")->getError()) <<"]*Gaussian::g1(et,m1["<< rnd.Gaus(rws.var("m1")->getVal(),rws.var("m1")->getError()) <<"],s1["<< rnd.Gaus(rws.var("s1")->getVal(),rws.var("s1")->getError()) <<"]),"
+             << "x2["<< rnd.Gaus(rws.var("x2")->getVal(),rws.var("x2")->getError()) <<"]*Gaussian::g2(et,m2["<< rnd.Gaus(rws.var("m2")->getVal(),rws.var("m2")->getError()) <<"],s2["<< rnd.Gaus(rws.var("s2")->getVal(),rws.var("s2")->getError()) <<"]),"
+             << "x3["<< rnd.Gaus(rws.var("x3")->getVal(),rws.var("x3")->getError()) <<"]*Gaussian::g3(et,m3["<< rnd.Gaus(rws.var("m3")->getVal(),rws.var("m3")->getError()) <<"],s3["<< rnd.Gaus(rws.var("s3")->getVal(),rws.var("s3")->getError()) <<"]),"
+             << "x4["<< rnd.Gaus(rws.var("x4")->getVal(),rws.var("x4")->getError()) <<"]*Gaussian::g4(et,m4["<< rnd.Gaus(rws.var("m4")->getVal(),rws.var("m4")->getError()) <<"],s4["<< rnd.Gaus(rws.var("s4")->getVal(),rws.var("s4")->getError()) <<"]),"
+             << "Gaussian::g5(et,m5["<< rnd.Gaus(rws.var("m5")->getVal(),rws.var("m5")->getError()) <<"],s5["<< rnd.Gaus(rws.var("s5")->getVal(),rws.var("s5")->getError()) <<"]))\");"
+	     << endl<<endl;
 
 	TCanvas canvas("canvas","Sigma (et)", 600,600);
 
 	RooPlot *et_frame = et.frame();
+	et_frame->SetTitle("");
 	dataSet.plotOn(et_frame);
+	rws.pdf("errorSignal1")->plotOn(et_frame,RooFit::LineColor(kRed));
+	rws.pdf("errorSignal2")->plotOn(et_frame,RooFit::LineColor(kRed));
 	rws.pdf("errorSignal")->plotOn(et_frame);
 	et_frame->Draw();
 	gPad->SetLogy(kTRUE);
@@ -181,7 +209,7 @@ int fitEt() {
 	std::cout << "static const Double_t e_02p2 = " << fitFcn->GetParameter(8)/max_bin << ';' << std::endl;
 
 */
-	canvas.SaveAs("et_signal.png");
+	canvas.SaveAs("et_signal.C");
 
 	return 1;
 
